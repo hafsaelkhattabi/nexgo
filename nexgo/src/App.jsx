@@ -1,0 +1,89 @@
+// import React from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"; // Import Router and Routes
+import { LanguageProvider } from "./context/LanguageContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import Header from "./component/Header";
+import Hero from "./component/Hero";
+import Content from "./component/Content";
+import Opportunities from "./component/Opportunities";
+import Footer from "./component/Footer";
+// import AuthPage from "./component/AuthPage"; // Import the AuthPage component
+import AddRestaurantForm from "./component/AddRestaurantForm";
+import RestaurantList from "./component/RestaurantList";
+import AdminDashboard from "./component/dashboard/AdminDashboard";
+import Login from "./component/Login";
+import PrivateRoute from "./component/PrivateRoute";
+import OrderPage from "./component/OrderPage";
+import DeliveryApplication from "./component/DeliveryApplication";
+import AddDeliveryForm from "./component/AddDeliveryForm";
+import RestaurantDashboard from "./pages/RestaurantDashboard";
+import DeliveryDashboard from "./pages/DeliveryDashboard";
+import CustomerDashboard from "./pages/CustomerDashboard";
+import Register from "./component/Register";
+import MenuManagement from "./layouts/Menu";
+import PartnerRequest from "./component/PartnerRequest";
+
+
+function Layout({ children }) {
+  const location = useLocation();
+  const hideHeaderFooter = ["/login", "/register", "/auth", "/restaurant/dashboard", "/menu", "/delivery/dashboard", "/customer/dashboard", "/subscribe/delivery", "/order", "/admin", "/subscribe/partenaire"].includes(location.pathname);
+
+  return (
+    <>
+      {!hideHeaderFooter && <Header />}
+      <main>{children}</main>
+      {!hideHeaderFooter && <Footer />}
+    </>
+  );
+}
+
+
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider>
+        <LanguageProvider>
+           <Layout>
+          {/* Define routes */}
+          <Routes>
+            {/* Home Route */}
+            <Route
+              path="/"
+              element={
+                <>
+                  <Hero />
+                  <Content />
+                  <Opportunities />
+                </>
+              }
+            />
+
+            {/* Auth Route */}
+            
+            <Route path="/login" element={<Login />} /> 
+            <Route path="/register" element={<Register/>} />
+            <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
+            <Route path="/menu" element={<MenuManagement />} />
+            <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
+            <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+            {/* <Route path="/login" element={<Login />} /> */}
+            <Route element={<PrivateRoute />}/>
+            <Route path="/admin" element={<AdminDashboard />}></Route>
+            <Route path="/admin/add-delivery" element={<AddDeliveryForm />} />
+            <Route path="/auth" element={<Login />} />
+            <Route path="/admin/add-restaurant" element={<AddRestaurantForm />} />
+            <Route path="/restaurants" element={<RestaurantList />} />
+            <Route path="/order" element={<OrderPage />} />
+            <Route path="/subscribe/delivery" element={<DeliveryApplication />} />
+            <Route path="/subscribe/partenaire" element={<PartnerRequest />} /> 
+            {/* Add more routes as needed */}
+          </Routes>
+          </Layout>
+        </LanguageProvider>
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+export default App;

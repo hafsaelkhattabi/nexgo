@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Utensils, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
@@ -39,8 +40,8 @@ const RestaurantCard = ({ restaurant, baseUrl, onAddToCart }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
-      {/* Restaurant Image */}
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+
       <div className="relative h-48 overflow-hidden bg-gray-100">
         {!imageLoaded && (
           <div className="absolute inset-0 animate-pulse bg-gray-200" />
@@ -53,6 +54,7 @@ const RestaurantCard = ({ restaurant, baseUrl, onAddToCart }) => {
           }`}
           onLoad={() => setImageLoaded(true)}
         />
+
         
         {/* Tags */}
         <div className="absolute top-3 right-3 flex gap-2">
@@ -67,8 +69,11 @@ const RestaurantCard = ({ restaurant, baseUrl, onAddToCart }) => {
         </div>
       </div>
       
+
       {/* Restaurant Info */}
       <div className="p-4 flex-1 flex flex-col">
+
+      <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-xl font-semibold">{restaurant.name}</h2>
           {restaurant.rating && (
@@ -92,13 +97,17 @@ const RestaurantCard = ({ restaurant, baseUrl, onAddToCart }) => {
           )}
         </div>
         
+
         {/* Menu Toggle */}
         <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-auto">
+
+        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600">
             <Utensils size={16} />
             <span className="text-sm">{restaurant.cuisine}</span>
           </div>
           
+
           <button 
             onClick={toggleMenu}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 bg-orange-500 text-white hover:bg-orange-600"
@@ -160,7 +169,29 @@ const RestaurantCard = ({ restaurant, baseUrl, onAddToCart }) => {
             )}
           </div>
         )}
+
+          {menuUrl && (
+            <div 
+              className="relative"
+              onMouseEnter={() => setMenuHovered(true)}
+              onMouseLeave={() => setMenuHovered(false)}
+            >
+              <a 
+                href={menuUrl}
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 bg-orange-500 text-white hover:bg-orange-600"
+              >
+                Menu
+                <ExternalLink size={14} className={`transition-transform duration-300 ${
+                  menuHovered ? "translate-x-0.5" : ""
+                }`} />
+              </a>
+            </div>
+          )}
+        </div>
       </div>
+    </div>
     </div>
   );
 };

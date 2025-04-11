@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 
 const NotificationSchema = new mongoose.Schema({
-  message: String,
-  deliveryId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  seen: { type: Boolean, default: false },
+  recipient: { type: String, required: true }, // restaurantId, deliveryId, or customerId
+  recipientType: { type: String, enum: ["restaurant", "delivery", "customer"], required: true },
+  message: { type: String, required: true },
+  isRead: { type: Boolean, default: false },
+  relatedOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Notification", NotificationSchema);

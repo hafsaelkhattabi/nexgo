@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Bell, ClipboardList, Trash, PlusCircle, ImagePlus } from "lucide-react";
@@ -323,41 +321,40 @@ function RestaurantDashboard() {
           </div>
 
           <div className="bg-white shadow-lg rounded-lg p-6">
-  <h2 className="text-xl font-semibold flex items-center gap-2">
-    <ClipboardList className="text-green-500" /> Orders
-  </h2>
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <ClipboardList className="text-green-500" /> Orders
+            </h2>
 
-  {orders.length === 0 ? (
-    <p className="text-gray-500 mt-2">No new orders.</p>
-  ) : (
-    <ul className="mt-3 space-y-2">
-      {orders.map((order) => (
-        <li key={order._id} className="p-3 bg-gray-50 border rounded-md space-y-1">
-          <p>
-            <span className="font-medium text-gray-700">Order from:</span>
-            <span className="font-semibold ml-2">{order.customerId}</span>
-          </p>
-          <p>
-            <span className="font-medium text-gray-700">Items:</span>
-            <span className="ml-2">
-              {order.items.map(item => item.name).join(", ")}
-            </span>
-          </p>
-          <p>
-            <span className="font-medium text-gray-700">Status:</span>
-            <span className="ml-2">{order.status}</span>
-          </p>
-          {order.createdAt && (
-            <p className="text-sm text-gray-400">
-              Ordered at: {new Date(order.createdAt).toLocaleString()}
-            </p>
-          )}
-        </li>
-      ))}
-    </ul>
-  )}
+            {orders.length === 0 ? (
+              <p className="text-gray-500 mt-2">No new orders.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {orders.map((order) => (
+                  <li key={order._id} className="p-3 bg-gray-50 border rounded-md space-y-1">
+                    <p>
+                      <span className="font-medium text-gray-700">Order from:</span>
+                      <span className="font-semibold ml-2">{order.customerId}</span>
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-700">Items:</span>
+                      <span className="ml-2">
+                        {order.items.map(item => item.name).join(", ")}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-700">Status:</span>
+                      <span className="ml-2">{order.status}</span>
+                    </p>
+                    {order.createdAt && (
+                      <p className="text-sm text-gray-400">
+                        Ordered at: {new Date(order.createdAt).toLocaleString()}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-
         </div>
 
         <div className="lg:col-span-2 space-y-6">
@@ -510,3 +507,4 @@ function RestaurantDashboard() {
 }
 
 export default RestaurantDashboard;
+

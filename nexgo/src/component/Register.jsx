@@ -56,7 +56,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4 mt-20">
       <div className="w-full max-w-md flex flex-col overflow-hidden rounded-3xl bg-white/80 backdrop-blur-xl shadow-lg border border-border/40 transition-all duration-500">
         <div className="p-8 sm:p-10">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-8 mx-auto">
@@ -80,7 +80,6 @@ const Register = () => {
             
             <button type="submit" disabled={isLoading} className="w-full text-[#502314] bg-primary py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-300 hover:bg-[#FFC72C]">
               {isLoading ? <div className="h-5 w-5 border-2 border-white/20 border-t-white animate-spin" /> : "Create Account"}
-            
             </button>
           </form>
         </div>

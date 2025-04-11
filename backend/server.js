@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const uploadRoutes = require("./routes/uploadRoutes")
+const uploadRoutes = require("./routes/uploadRoutes");
 const deliveryRoutes = require('./routes/DeliveryRoutes');
 const restaurantRoutes = require("./routes/RestaurantRoutes");
 const deliveryRoute = require("./routes/deliveryRoute");
@@ -32,15 +32,14 @@ mongoose
 app.use("/restaurants", restaurantRoutes); // Restaurant routes
 app.use("/image", uploadRoutes); // File upload routes
 app.use("/apply", deliveryRoutes); // Delivery application routes
-app.use("/deliveries", deliveryRoute); // delivery form routes
-// app.use("/api/auth", authRoutes);
+app.use("/deliveries", deliveryRoute); // Delivery form routes
 app.use("/api/restaurant", restaurantRoutesauth);
-app.use ("/login", authRoutes)
+app.use("/login", authRoutes);
 app.use("/restaurants", restauraantroutesdash);
 app.use("/deliveries", deliveryRoutes);
 app.use("/menu", menu);
 app.use("/orders", order);
-app.use("/notification", notificationRoutes)
+app.use("/notification", notificationRoutes);
 
 // Start Server
 app.listen(PORT, () => {

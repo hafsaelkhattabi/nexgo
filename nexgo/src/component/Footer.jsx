@@ -5,7 +5,9 @@ function Footer() {
   const { darkMode } = useContext(ThemeContext); // Access darkMode from the context
 
   return (
+
     <footer   id="footer"
+
       className={`py-12 ${
         darkMode ? "bg-[#1F2937] text-white" : "bg-[#502314] text-white"
       }`}

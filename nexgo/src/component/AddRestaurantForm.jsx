@@ -8,6 +8,8 @@ function AddRestaurantForm() {
     cuisine: "",
     contact: "",
     image: null,
+    menu: null,
+
   });
 
   const handleChange = (e) => {
@@ -29,6 +31,9 @@ function AddRestaurantForm() {
     data.append("contact", formData.contact);
     if (formData.image) data.append("image", formData.image);
 
+    if (formData.menu) data.append("menu", formData.menu);
+
+
     try {
       const response = await axios.post("http://localhost:5000/image/restaurants", data, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -36,7 +41,11 @@ function AddRestaurantForm() {
 
       if (response.status === 201) {
         alert("Restaurant added successfully!");
+
         setFormData({ name: "", address: "", cuisine: "", contact: "", image: null });
+
+        setFormData({ name: "", address: "", cuisine: "", contact: "", image: null, menu: null });
+
       } else {
         alert("Failed to add restaurant.");
       }
@@ -92,12 +101,23 @@ function AddRestaurantForm() {
           onChange={handleFileChange}
           className="w-full p-2 border rounded"
           accept="image/*"
+
           required
+
+        />
+        <input
+          type="file"
+          name="menu"
+          onChange={handleFileChange}
+          className="w-full p-2 border rounded"
+          accept="image/*, application/pdf"
+
         />
         <button
           type="submit"
           className="bg-[#FFC72C] text-[#502314] py-2 px-4 rounded-full font-bold hover:bg-[#502314] hover:text-white"
         >
+
           Add Restaurant
         </button>
       </form>

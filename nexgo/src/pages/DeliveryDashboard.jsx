@@ -4,8 +4,8 @@ import axios from "axios";
 import { Bell, PackageCheck, CheckCircle, Truck, Clock, User, MapPin } from "lucide-react";
 
 function DeliveryDashboard() {
-  const [deliveryId, setDeliveryId] = useState("delivery123"); // Hardcoded for demo
-  const [deliveryName, setDeliveryName] = useState("John Delivery"); // Hardcoded for demo
+  const [deliveryId, setDeliveryId] = useState("123"); // Hardcoded for demo
+  const [deliveryName, setDeliveryName] = useState("Delivery"); // Hardcoded for demo
   const [availableOrders, setAvailableOrders] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -43,7 +43,7 @@ function DeliveryDashboard() {
     
     try {
       // In a real app, this endpoint would return orders ready for pickup and not assigned
-      const response = await axios.get(`${baseUrl}/delivery/available-orders`);
+      const response = await axios.get(`${baseUrl}/orders/delivery/available-orders`);
       setAvailableOrders(Array.isArray(response.data) ? response.data : []);
       setError(null);
     } catch (error) {

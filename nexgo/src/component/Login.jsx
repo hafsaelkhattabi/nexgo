@@ -44,16 +44,9 @@ const Login = () => {
 
   return (
 
+    <div>
+
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">
-      <div className="w-full max-w-md flex flex-col rounded-3xl bg-white/80 backdrop-blur-xl shadow-lg border border-border/40 p-8 sm:p-10">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-8 mx-auto">
-          <LockKeyhole className="w-8 h-8 text-primary text-[#502314] " />
-        </div>
-
-        <h1 className="text-3xl font-semibold text-center mb-2 text-[#502314]">Welcome Back</h1>
-        <p className="text-center text-muted-foreground mb-8 text-[#502314]">Sign in to your account</p>
-
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4 mt-20">
       <div className="w-full max-w-md flex flex-col rounded-3xl bg-white/80 backdrop-blur-xl shadow-lg border border-border/40 p-8 sm:p-10">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-8 mx-auto">
           <LockKeyhole className="w-8 h-8 text-primary" />
@@ -68,8 +61,6 @@ const Login = () => {
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
 
               <User className="w-5 h-5 text-muted-foreground/60 text-[#502314]" />
-
-              <User className="w-5 h-5 text-muted-foreground/60" />
 
             </div>
             <input
@@ -87,8 +78,6 @@ const Login = () => {
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
 
               <LockKeyhole className="w-5 h-5 text-muted-foreground/60 text-[#502314]" />
-
-              <LockKeyhole className="w-5 h-5 text-muted-foreground/60" />
 
             </div>
             <input
@@ -123,7 +112,7 @@ const Login = () => {
       </div>
     </div>
     </div>
-    </div>
+    
   );
  };
 

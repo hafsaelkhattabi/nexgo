@@ -1,175 +1,174 @@
 const express = require('express');
-const router = express.Router();
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
-const Notification = require('../models/Notification');
+const Restaurant = require('../models/Restaurant');
+const router = express.Router();
 
-// POST - Place a new order
-router.post('/', async (req, res) => {
+// Get all orders
+router.get('/', async (req, res) => {
   try {
-    const order = new Order(req.body);
-    await order.save();
-
-    // Create notification for restaurant
-    const restaurantNotification = new Notification({
-      recipient: order.restaurantId,
-      recipientType: "restaurant",
-      message: `New order #${order._id.toString().slice(-6)} received from ${order.customerName}`,
-      relatedOrderId: order._id
-    });
-    await restaurantNotification.save();
-
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// GET - All orders for a specific customer
-router.get('/customer/:customerId', async (req, res) => {
-  try {
-    const { customerId } = req.params;
-    const orders = await Order.find({ customerId }).sort({ createdAt: -1 });
+    const orders = await Order.find().sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
   }
 });
 
-// GET - All orders for a specific restaurant
+// Get orders for a customer
+router.get('/customer/:customerId', async (req, res) => {
+  try {
+    const orders = await Order.find({ customerId: req.params.customerId }).sort({ createdAt: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching customer orders:', error);
+    res.status(500).json({ message: 'Failed to fetch customer orders', error: error.message });
+  }
+});
+
+// Get orders for a restaurant
 router.get('/restaurant/:restaurantId', async (req, res) => {
   try {
     const orders = await Order.find({ restaurantId: req.params.restaurantId }).sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error fetching restaurant orders:', error);
+    res.status(500).json({ message: 'Failed to fetch restaurant orders', error: error.message });
   }
 });
 
-// PATCH - Restaurant updates order status
-router.patch('/orders/:orderId/restaurant-update', async (req, res) => {
+// Get orders available for delivery
+router.get('/delivery', async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const { status } = req.body;
-
-    const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
-
-    const customerNotification = new Notification({
-      recipient: order.customer,
-      recipientType: "customer",
-      message: `Your order #${orderId.slice(-6)} has been ${status.toLowerCase()}`,
-      relatedOrderId: order._id
-    });
-    await customerNotification.save();
-
-    res.json(order);
+    const orders = await Order.find({ 
+      status: 'ready_for_delivery',
+      acceptedByDeliveryId: { $exists: false }
+    }).sort({ createdAt: 1 });
+    res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Error updating order status" });
+    console.error('Error fetching delivery orders:', error);
+    res.status(500).json({ message: 'Failed to fetch delivery orders', error: error.message });
   }
 });
 
-// GET - Orders ready for pickup (for delivery)
-router.get('/delivery/available-orders', async (req, res) => {
+// Get orders for a specific delivery driver
+router.get('/delivery/:driverId', async (req, res) => {
   try {
-    const orders = await Order.find({ deliveryId: null, status: "Ready for Pickup" });
-    res.json(orders);
+    const orders = await Order.find({ 
+      acceptedByDeliveryId: req.params.driverId,
+      status: { $in: ['accepted_by_delivery', 'in_delivery'] }
+    }).sort({ createdAt: -1 });
+    res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching available orders" });
+    console.error('Error fetching driver orders:', error);
+    res.status(500).json({ message: 'Failed to fetch driver orders', error: error.message });
   }
 });
 
-// PATCH - Delivery person accepts order
-router.patch('/orders/:orderId/delivery-accept', async (req, res) => {
+// Create a new order
+router.post('/', async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const { deliveryId, deliveryName } = req.body;
-
-    const checkOrder = await Order.findById(orderId);
-    if (checkOrder.deliveryId) {
-      return res.status(400).json({ message: "Order has already been accepted" });
+    const { restaurantId, customerId, customerName, customerAddress, customerPhone, items, totalAmount } = req.body;
+    
+    // Check if restaurant exists
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found' });
     }
-
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { deliveryId, deliveryName, status: "On The Way" },
-      { new: true }
-    );
-
-    const restaurantNotification = new Notification({
-      recipient: order.restaurantId,
-      recipientType: "restaurant",
-      message: `Order #${orderId.slice(-6)} has been picked up by ${deliveryName}`,
-      relatedOrderId: order._id
+    
+    // Create the order with all required fields
+    const order = new Order({
+      customerId,
+      customerName,
+      customer: customerId, // Required by schema
+      customerAddress,
+      address: customerAddress, // Required by schema
+      customerPhone,
+      restaurantId,
+      restaurant: restaurantId, // MongoDB ObjectId reference
+      restaurantName: restaurant.name,
+      items,
+      totalAmount,
+      totalPrice: totalAmount, // Required by schema
+      status: 'pending',
+      statusUpdates: [{ status: 'pending', timestamp: new Date() }]
     });
-    await restaurantNotification.save();
+    
+    await order.save();
+    res.status(201).json(order);
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(400).json({ message: 'Failed to create order', error: error.message });
+  }
+});
 
-    const customerNotification = new Notification({
-      recipient: order.customer,
-      recipientType: "customer",
-      message: `Your order #${orderId.slice(-6)} is on the way with ${deliveryName}`,
-      relatedOrderId: order._id
+// Update order status
+router.patch('/:id/status', async (req, res) => {
+  try {
+    const { status, ...additionalData } = req.body;
+    const orderId = req.params.id;
+    
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    // Update the order status and add to status history
+    order.status = status;
+    order.statusUpdates.push({
+      status,
+      timestamp: new Date(),
+      note: additionalData.note
     });
-    await customerNotification.save();
-
-    res.json(order);
+    
+    // Add any additional data to the order
+    Object.assign(order, additionalData);
+    
+    await order.save();
+    res.status(200).json(order);
   } catch (error) {
-    res.status(500).json({ message: "Error accepting order" });
+    console.error('Error updating order status:', error);
+    res.status(400).json({ message: 'Failed to update order status', error: error.message });
   }
 });
 
-// PATCH - Mark order as delivered
-router.patch('/orders/:orderId/mark-delivered', async (req, res) => {
+// Cancel an order
+router.patch('/:id/cancel', async (req, res) => {
   try {
-    const { orderId } = req.params;
-
-    const order = await Order.findByIdAndUpdate(orderId, { status: "Delivered" }, { new: true });
-
-    const customerNotification = new Notification({
-      recipient: order.customer,
-      recipientType: "customer",
-      message: `Your order #${orderId.slice(-6)} has been delivered. Enjoy your meal!`,
-      relatedOrderId: order._id
+    const { customerId } = req.body;
+    const orderId = req.params.id;
+    
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    // Check if customer owns this order
+    if (order.customerId !== customerId) {
+      return res.status(403).json({ message: 'Not authorized to cancel this order' });
+    }
+    
+    // Only allow cancellation if the order is pending or accepted by restaurant
+    if (!['pending', 'accepted_by_restaurant'].includes(order.status)) {
+      return res.status(400).json({ 
+        message: 'Cannot cancel order in current status', 
+        currentStatus: order.status 
+      });
+    }
+    
+    // Update the order status
+    order.status = 'cancelled';
+    order.statusUpdates.push({
+      status: 'cancelled',
+      timestamp: new Date(),
+      note: 'Cancelled by customer'
     });
-    await customerNotification.save();
-
-    res.json(order);
+    
+    await order.save();
+    res.status(200).json(order);
   } catch (error) {
-    res.status(500).json({ message: "Error marking order as delivered" });
-  }
-});
-
-// GET - Pending orders (for delivery)
-router.get('/delivery/pending-orders', async (req, res) => {
-  try {
-    const orders = await Order.find({ deliveryId: null, status: "Pending" });
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching pending orders" });
-  }
-});
-
-// PATCH - Delivery accepts order (legacy route)
-router.patch('/orders/:orderId/accept', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { deliveryId } = req.body;
-
-    const order = await Order.findByIdAndUpdate(orderId, { deliveryId, status: "Accepted" }, { new: true });
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: "Error accepting order" });
-  }
-});
-
-// PATCH - Generic update to order status
-router.patch('/orders/:orderId/update-status', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { status } = req.body;
-
-    const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: "Error updating order status" });
+    console.error('Error cancelling order:', error);
+    res.status(400).json({ message: 'Failed to cancel order', error: error.message });
   }
 });
 

@@ -15,16 +15,21 @@ import PrivateRoute from "./component/PrivateRoute";
 import OrderPage from "./component/OrderPage";
 import DeliveryApplication from "./component/DeliveryApplication";
 import AddDeliveryForm from "./component/AddDeliveryForm";
-import RestaurantDashboard from "./pages/RestaurantDashboard";
-import DeliveryDashboard from "./pages/DeliveryDashboard";
-import CustomerDashboard from "./pages/CustomerDashboard";
+// import RestaurantDashboard from "./pages/RestaurantDashboard";
+// import DeliveryDashboard from "./pages/DeliveryDashboard";
+// import CustomerDashboard from "./pages/CustomerDashboard";
 import Register from "./component/Register";
 import MenuManagement from "./layouts/Menu";
 import PartnerRequest from "./component/PartnerRequest";
+import CustomerPage from "./page/CustomerPage";
+import RestaurantPage from "./page/RestaurantPage";
+import DeliveryPage from "./page/DeliveryPage";
 
 function Layout({ children }) {
   const location = useLocation();
-  const hideHeaderFooter = ["/login", "/register", "/auth", "/restaurant/dashboard", "/menu", "/delivery/dashboard", "/customer/dashboard", "/subscribe/delivery", "/order", "/admin", "/subscribe/partenaire"].includes(location.pathname);
+  const hideHeaderFooter = ["/login", "/register", "/auth",
+     "/customer", "/restaurant", "/delivery",
+     "/restaurant/dashboard", "/menu", "/delivery/dashboard", "/customer/dashboard", "/subscribe/delivery", "/order", "/admin", "/subscribe/partenaire"].includes(location.pathname);
 
   return (
     <>
@@ -54,10 +59,16 @@ function App() {
               />
               <Route path="/login" element={<Login />} /> 
               <Route path="/register" element={<Register/>} />
-              <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
+              {/* <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} /> */}
               <Route path="/menu" element={<MenuManagement />} />
-              <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
-              <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+              {/* <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
+              <Route path="/customer/dashboard" element={<CustomerDashboard />} /> */}
+
+        <Route path="/customer" element={<CustomerPage />} />
+        <Route path="/restaurant" element={<RestaurantPage />} />
+        <Route path="/delivery" element={<DeliveryPage />} />
+
+
               <Route element={<PrivateRoute />}/>
               <Route path="/admin" element={<AdminDashboard />}></Route>
               <Route path="/admin/add-delivery" element={<AddDeliveryForm />} />

@@ -1,82 +1,67 @@
 import React from "react";
-import { Clock, User } from "lucide-react";
+import { Clock, User, MapPin, ShoppingCart } from "lucide-react";
 
-const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  preparing: "bg-blue-100 text-blue-800 border-blue-200",
-  ready: "bg-green-100 text-green-800 border-green-200",
-  completed: "bg-gray-100 text-gray-800 border-gray-200",
-};
-
-const OrderCard = ({ order, onStatusChange }) => {
-  const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-
-  const handleStatusChange = (newStatus) => {
-    if (onStatusChange) {
-      onStatusChange(order.id, newStatus);
-    }
-  };
-
-  const getNextStatus = () => {
-    switch (order.status) {
-      case "pending":
-        return "preparing";
-      case "preparing":
-        return "ready";
-      case "ready":
-        return "completed";
-      default:
-        return null;
-    }
-  };
-
-  const nextStatus = getNextStatus();
-
+const OrderCard = ({ order, actions }) => {
   return (
-    <div className="mb-4 overflow-hidden transition-all duration-300 hover:shadow-md animate-slideIn border border-gray-200 rounded-lg">
-      <div className="bg-muted/30 pb-3 pt-3 px-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Order #{order.id.slice(-4)}</span>
-            <span className={`px-3 py-1 text-xs rounded-full ${statusColors[order.status]}`}>
-              {statusText}
-            </span>
-          </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{new Date(order.createdAt).toLocaleTimeString()}</span>
-          </div>
+    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center">
+          <Clock className="text-gray-500 mr-2" size={18} />
+          <span className="text-sm text-gray-600">
+            {new Date(order.createdAt).toLocaleTimeString()}
+          </span>
         </div>
+        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+          #{order.orderNumber}
+        </span>
       </div>
-      <div className="p-4">
-        <div className="mb-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <User className="h-3.5 w-3.5" />
-          <span>{order.customer}</span>
-        </div>
+
+      <div className="mb-4">
+        <h3 className="font-semibold text-lg mb-2">Order Items</h3>
         <ul className="space-y-2">
-          {order.items.map((item) => (
-            <li key={item.id} className="flex justify-between text-sm">
-              <div className="flex items-baseline gap-2">
-                <span className="font-medium">{item.quantity}x</span>
-                <span>{item.name}</span>
-              </div>
-              <span className="text-muted-foreground">${item.price.toFixed(2)}</span>
+          {order.items.map((item, index) => (
+            <li key={`${order._id}-item-${index}`} className="flex justify-between">
+              <span>{item.name}</span>
+              <span className="font-medium">
+                {item.quantity} × ${item.price.toFixed(2)}
+              </span>
             </li>
           ))}
         </ul>
-        <div className="mt-3 flex justify-between border-t border-border/60 pt-2">
-          <span className="font-medium">Total</span>
-          <span className="font-medium">${order.total.toFixed(2)}</span>
+      </div>
+
+      <div className="border-t border-b border-gray-100 py-4 my-4">
+        <div className="flex justify-between font-medium">
+          <span>Total</span>
+          <span>${order.totalAmount.toFixed(2)}</span>
         </div>
       </div>
-      {order.status !== "completed" && (
-        <div className="bg-muted/20 p-3">
-          <button
-            className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            onClick={() => nextStatus && handleStatusChange(nextStatus)}
-          >
-            Mark as {nextStatus?.charAt(0).toUpperCase() + nextStatus?.slice(1)}
-          </button>
+
+      <div className="mb-6 space-y-3">
+        <div className="flex items-start">
+          <User className="text-gray-500 mr-2 mt-1" size={18} />
+          <div>
+            <p className="font-medium">{order.customerName}</p>
+            <p className="text-sm text-gray-600">{order.customerPhone}</p>
+          </div>
+        </div>
+        {order.deliveryAddress && (
+          <div className="flex items-start">
+            <MapPin className="text-gray-500 mr-2 mt-1" size={18} />
+            <p className="text-sm text-gray-600">{order.deliveryAddress}</p>
+          </div>
+        )}
+        {order.note && (
+          <div className="flex items-start">
+            <ShoppingCart className="text-gray-500 mr-2 mt-1" size={18} />
+            <p className="text-sm text-gray-600">Note: {order.note}</p>
+          </div>
+        )}
+      </div>
+
+      {actions && (
+        <div className="mt-4">
+          {actions}
         </div>
       )}
     </div>
@@ -84,5 +69,3 @@ const OrderCard = ({ order, onStatusChange }) => {
 };
 
 export default OrderCard;
-
-  

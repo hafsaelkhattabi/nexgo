@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import RestaurantCard from "./RestaurantCard";
@@ -105,16 +103,15 @@ function RestaurantList() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {restaurants.map((restaurant) => (
-            <div 
+            <RestaurantCard 
               key={restaurant._id}
-              className="cursor-pointer"
-              onClick={() => setSelectedRestaurant(restaurant)}
-            >
-              <RestaurantCard 
-                restaurant={restaurant}
-                baseUrl={baseUrl}
-              />
-            </div>
+              restaurant={restaurant}
+              baseUrl={baseUrl}
+              onAddToCart={(item) => {
+                setSelectedRestaurant(restaurant);
+                addToCart(item);
+              }}
+            />
           ))}
         </div>
       )}

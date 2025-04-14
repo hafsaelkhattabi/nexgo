@@ -104,21 +104,10 @@ function Header() {
             to="/restaurants"
             className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
           >
-            Restaurants
+            {translations[language]["restaurants"] || "Restaurants"}
           </Link>
 
           {/* About Us Dropdown */}
-
-          <div className="relative">
-           <button
-            onClick={() => window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" })}
-            className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
-           >
-           {translations[language]["about"]}
-           </button>
-          </div>
-
-
           <div className="relative" ref={aboutRef}>
             <button
               onClick={() => setIsAboutOpen(!isAboutOpen)}
@@ -152,10 +141,19 @@ function Header() {
                 >
                   Careers
                 </Link>
+                <button
+                  onClick={() => window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" })}
+                  className={`block w-full text-left px-4 py-2 ${
+                    darkMode
+                      ? "hover:bg-gray-700"
+                      : "hover:bg-[#FFC72C] hover:text-[#502314]"
+                  }`}
+                >
+                  Contact Us
+                </button>
               </div>
             )}
           </div>
-
         </div>
 
         {/* Dark Mode & Language Toggle + Login Button */}
@@ -178,12 +176,12 @@ function Header() {
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
-          {/* Let’s Go (Login) Button */}
+          {/* Let's Go (Login) Button */}
           <Link
             to="/auth"
             className="bg-[#FFC72C] text-[#502314] py-2 px-5 rounded-full text-base font-bold no-underline transition-colors duration-300 hover:bg-[#502314] hover:text-white shadow-md"
           >
-            Let’s Go!
+            Let's Go!
           </Link>
         </div>
       </nav>
@@ -233,7 +231,7 @@ function Header() {
             to="/restaurants"
             className="block py-2 font-bold hover:text-[#FFC72C]"
           >
-            Restaurants
+            {translations[language]["restaurants"] || "Restaurants"}
           </Link>
 
           {/* About Us Dropdown in Mobile Menu */}
@@ -258,6 +256,15 @@ function Header() {
                 >
                   Careers
                 </Link>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" });
+                  }}
+                  className="block w-full text-left py-2 hover:text-[#FFC72C]"
+                >
+                  Contact Us
+                </button>
               </div>
             )}
           </div>
@@ -286,7 +293,7 @@ function Header() {
               to="/auth"
               className="bg-[#FFC72C] text-[#502314] py-2 px-5 rounded-full text-base font-bold no-underline transition-colors duration-300 hover:bg-[#502314] hover:text-white shadow-md"
             >
-              Let’s Go!
+              Let's Go!
             </Link>
           </div>
         </div>
@@ -296,4 +303,3 @@ function Header() {
 }
 
 export default Header;
-

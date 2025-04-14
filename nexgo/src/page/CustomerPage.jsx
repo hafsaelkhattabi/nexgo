@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { ShoppingCart, Utensils, CheckCircle, XCircle, Clock, Plus, Minus, Trash2, User, MapPin, RefreshCw } from "lucide-react";
+import { 
+  ShoppingCart, Utensils, CheckCircle, XCircle, Clock, 
+  Plus, Minus, Trash2, User, MapPin, RefreshCw 
+} from "lucide-react";
+import { apiService, API_BASE_URL } from "../services/ApiServices";
+import OrderCard from "../component/OrderCard";
 
-function CustomerDashboard() {
+const CustomerPage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
-  const [address, setAddress] = useState("");
   const [menuItems, setMenuItems] = useState([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [cart, setCart] = useState([]);
+  const [address, setAddress] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("restaurants");
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState({
     restaurants: false,
     menu: false,
@@ -25,13 +30,11 @@ function CustomerDashboard() {
     orders: null,
     placeOrder: null
   });
-  const [lastUpdated, setLastUpdated] = useState(null);
-
-  // User details - replace with your actual authentication
-  const customerName = "Customer";
-  const customerId = "123";
-  const baseUrl = "http://localhost:5000";
-
+  
+  // Mock user - replace with your auth system
+  const customerId = "c1";
+  const customerName = "John Doe";
+  
   useEffect(() => {
     fetchRestaurants();
     fetchOrders();
@@ -47,166 +50,149 @@ function CustomerDashboard() {
     setError(prev => ({ ...prev, restaurants: null }));
     
     try {
-      const response = await axios.get(`${baseUrl}/restaurants`);
-      setRestaurants(response.data);
-    } catch (error) {
-      console.error("Error fetching restaurants:", error);
+      const data = await apiService.getRestaurants();
+      setRestaurants(data);
+    } catch (err) {
+      console.error("Error fetching restaurants:", err);
       setError(prev => ({ ...prev, restaurants: "Failed to load restaurants" }));
     } finally {
       setLoading(prev => ({ ...prev, restaurants: false }));
     }
   };
-
+  
   const fetchOrders = async () => {
     setLoading(prev => ({ ...prev, orders: true, refreshing: true }));
     setError(prev => ({ ...prev, orders: null }));
     
     try {
-      const response = await axios.get(`${baseUrl}/orders/customer/${customerId}`, {
-        params: { includeStatusUpdates: true }
-      });
+      const data = await apiService.getCustomerOrders(customerId);
       
-      const sortedOrders = response.data.sort((a, b) => 
-        new Date(b.createdAt) - new Date(a.createdAt)
+      // Sort orders by creation date (newest first)
+      const sortedOrders = data.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       
       setOrders(sortedOrders);
       setLastUpdated(new Date());
-    } catch (error) {
-      console.error("Error fetching orders:", error);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
       setError(prev => ({ ...prev, orders: "Failed to load orders" }));
-      setOrders([]);
     } finally {
       setLoading(prev => ({ ...prev, orders: false, refreshing: false }));
     }
   };
 
-  const refreshOrders = async () => {
-    setLoading(prev => ({ ...prev, refreshing: true }));
-    await fetchOrders();
+  const refreshOrders = () => {
+    fetchOrders();
   };
-
+  
   const fetchMenuItems = async (restaurantId) => {
     setLoading(prev => ({ ...prev, menu: true }));
     setError(prev => ({ ...prev, menu: null }));
     
     try {
-      const response = await axios.get(`${baseUrl}/menu/${restaurantId}`);
-      const restaurant = restaurants.find(r => r._id === restaurantId);
+      const data = await apiService.getMenuItems(restaurantId);
+      setMenuItems(data);
       
-      if (!restaurant) {
-        throw new Error("Restaurant not found");
-      }
-
-      const itemsWithRestaurant = response.data.map(item => ({
-        ...item,
-        restaurantId: restaurant._id,
-        restaurantName: restaurant.name
-      }));
-
-      setMenuItems(itemsWithRestaurant);
+      const restaurant = restaurants.find(r => r._id === restaurantId);
       setSelectedRestaurant(restaurant);
-    } catch (error) {
-      console.error("Error fetching menu items:", error);
+    } catch (err) {
+      console.error("Error fetching menu:", err);
       setError(prev => ({ ...prev, menu: "Failed to load menu" }));
     } finally {
       setLoading(prev => ({ ...prev, menu: false }));
     }
   };
-
+  
   const addToCart = (item) => {
-    if (!item.restaurantId) {
-      console.error("Menu item missing restaurantId:", item);
-      return;
-    }
-
-    setCart(prevCart => {
-      if (prevCart.length > 0 && prevCart[0].restaurantId !== item.restaurantId) {
-        if (window.confirm("Your cart contains items from another restaurant. Start new order?")) {
-          return [{ ...item, quantity: 1 }];
-        }
-        return prevCart;
-      }
-
-      const existingItem = prevCart.find(cartItem => cartItem._id === item._id);
-      if (existingItem) {
-        return prevCart.map(cartItem =>
+    // Make sure to track which restaurant this item belongs to
+    const itemWithRestaurantId = {
+      ...item,
+      restaurantId: selectedRestaurant._id
+    };
+    
+    const existingItem = cart.find((cartItem) => cartItem._id === item._id);
+    
+    if (existingItem) {
+      setCart(
+        cart.map((cartItem) =>
           cartItem._id === item._id
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
-        );
-      }
-      return [...prevCart, { ...item, quantity: 1 }];
-    });
+        )
+      );
+    } else {
+      setCart([...cart, { ...itemWithRestaurantId, quantity: 1 }]);
+    }
   };
-
+  
   const removeFromCart = (itemId) => {
-    setCart(prevCart => prevCart.filter(item => item._id !== itemId));
+    setCart(cart.filter((item) => item._id !== itemId));
   };
-
-  const updateQuantity = (itemId, newQuantity) => {
-    if (newQuantity < 1) {
+  
+  const updateQuantity = (itemId, quantity) => {
+    if (quantity <= 0) {
       removeFromCart(itemId);
       return;
     }
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item._id === itemId ? { ...item, quantity: newQuantity } : item
+    
+    setCart(
+      cart.map((item) =>
+        item._id === itemId ? { ...item, quantity } : item
       )
     );
   };
-
+  
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
-  const toggleOrderDetails = (orderId) => {
-    if (expandedOrderId === orderId) {
-      setExpandedOrderId(null);
-    } else {
-      setExpandedOrderId(orderId);
-    }
-  };
-
   const placeOrder = async () => {
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      alert("Please add items to your cart before placing an order");
       return;
     }
-
-    if (!address.trim()) {
-      alert("Please enter delivery address");
-      return;
-    }
-
-    const restaurant = selectedRestaurant || restaurants.find(r => r._id === cart[0]?.restaurantId);
     
-    if (!restaurant) {
-      alert("Cannot determine restaurant. Please add items again.");
+    if (!address.trim()) {
+      alert("Please enter a delivery address");
       return;
     }
-
+    
     setLoading(prev => ({ ...prev, placeOrder: true }));
     setError(prev => ({ ...prev, placeOrder: null }));
-
+    
     try {
+      // Check if we have items from the same restaurant
+      const restaurantId = cart[0].restaurantId;
+      if (!restaurantId) {
+        throw new Error("Restaurant ID is missing from cart items");
+      }
+      
+      // Find the restaurant from the restaurants array using the restaurantId
+      const restaurant = restaurants.find(r => r._id === restaurantId);
+      
+      if (!restaurant) {
+        throw new Error("Restaurant not found");
+      }
+      
       const orderData = {
-        customer: customerId,
+        customerId,
         customerName,
+        customerAddress: address,
+        customerPhone: "123-456-7890", // You might want to get this from user input
         restaurantId: restaurant._id,
         restaurantName: restaurant.name,
-        address: address.trim(),
         items: cart.map(item => ({
           menuItemId: item._id,
           name: item.name,
           price: Number(item.price),
-          quantity: Number(item.quantity),
+          quantity: Number(item.quantity)
         })),
-        status: "Pending",
-        totalPrice: Number(getTotalPrice().toFixed(2))
+        totalAmount: Number(getTotalPrice().toFixed(2))
       };
-
-      const response = await axios.post(`${baseUrl}/orders`, orderData);
+      
+      console.log("Placing order with data:", orderData);
+      await apiService.createOrder(orderData);
       
       setCart([]);
       setAddress("");
@@ -214,86 +200,108 @@ function CustomerDashboard() {
       await fetchOrders();
       setActiveTab("orders");
       
-      alert(`Order ${response.data._id?.slice(-6) || ''} placed successfully!`);
-    } catch (error) {
-      console.error("Order failed:", error);
-      const errorMessage = error.response?.data?.message || error.message;
-      setError(prev => ({ ...prev, placeOrder: `Order failed: ${errorMessage}` }));
+      alert("Order placed successfully!");
+    } catch (err) {
+      console.error("Order failed:", err);
+      setError(prev => ({ ...prev, placeOrder: `Failed to place order: ${err.message}` }));
+      alert(`Failed to place order: ${err.message}`);
     } finally {
       setLoading(prev => ({ ...prev, placeOrder: false }));
     }
   };
-
+  
   const cancelOrder = async (orderId) => {
     try {
-      await axios.patch(`${baseUrl}/orders/${orderId}/cancel`, {
-        customerId
-      });
-      
+      await apiService.cancelOrder(orderId, customerId);
       fetchOrders();
-      alert(`Order #${orderId.slice(-6)} has been cancelled.`);
-    } catch (error) {
-      console.error("Error cancelling order:", error);
-      alert("Failed to cancel order. Please try again.");
+      alert("Order cancelled successfully");
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      alert("Failed to cancel order");
     }
   };
-
+  
+  const toggleOrderDetails = (orderId) => {
+    setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
+  };
+  
   const getStatusIcon = (status) => {
     switch (status) {
-      case "Preparing":
-        return <Clock size={20} className="text-yellow-600" />;
-      case "Ready for Pickup":
-        return <ShoppingCart size={20} className="text-blue-600" />;
-      case "On The Way":
-        return <Utensils size={20} className="text-orange-600" />;
-      case "Delivered":
+      case "accepted_by_restaurant":
+        return <Utensils size={20} className="text-blue-600" />;
+      case "ready_for_delivery":
+        return <ShoppingCart size={20} className="text-purple-600" />;
+      case "in_delivery":
+        return <MapPin size={20} className="text-orange-600" />;
+      case "delivered":
         return <CheckCircle size={20} className="text-green-600" />;
-      case "Cancelled":
+      case "rejected_by_restaurant":
+      case "cancelled":
         return <XCircle size={20} className="text-red-600" />;
       default:
         return <Clock size={20} className="text-yellow-600" />;
     }
   };
 
-  const getStatusTimeline = (order) => {
-    const statuses = [
-      { status: "Pending", label: "Order Placed", icon: <Clock size={16} /> },
-      { status: "Preparing", label: "Preparing", icon: <Utensils size={16} /> },
-      { status: "Ready for Pickup", label: "Ready", icon: <ShoppingCart size={16} /> },
-      { status: "On The Way", label: "On The Way", icon: <MapPin size={16} /> },
-      { status: "Delivered", label: "Delivered", icon: <CheckCircle size={16} /> },
-      { status: "Cancelled", label: "Cancelled", icon: <XCircle size={16} /> }
-    ];
-
-    return statuses.map((s) => ({
-      ...s,
-      active: order.status === s.status,
-      completed: getOrderStatusPercentage(order.status) > getOrderStatusPercentage(s.status),
-      date: getStatusDate(order, s.status)
-    }));
-  };
-
-  const getStatusDate = (order, status) => {
-    if (!order.statusUpdates) return null;
-    const update = order.statusUpdates.find(u => u.status === status);
-    return update ? formatOrderDate(update.timestamp) : null;
-  };
-
   const getOrderStatusPercentage = (status) => {
     const statusWeights = {
-      "Pending": 10,
-      "Preparing": 30,
-      "Ready for Pickup": 60,
-      "On The Way": 85,
-      "Delivered": 100,
-      "Cancelled": 0
+      "pending": 10,
+      "accepted_by_restaurant": 30,
+      "ready_for_delivery": 60,
+      "accepted_by_delivery": 70,
+      "in_delivery": 85,
+      "delivered": 100,
+      "rejected_by_restaurant": 0,
+      "cancelled": 0
     };
     return statusWeights[status] || 0;
   };
-
+  
   const formatOrderDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString();
+  };
+  
+  const getStatusTimeline = (order) => {
+    const statuses = [
+      { status: "pending", label: "Order Placed", icon: <Clock size={16} /> },
+      { status: "accepted_by_restaurant", label: "Preparing", icon: <Utensils size={16} /> },
+      { status: "ready_for_delivery", label: "Ready", icon: <ShoppingCart size={16} /> },
+      { status: "in_delivery", label: "On The Way", icon: <MapPin size={16} /> },
+      { status: "delivered", label: "Delivered", icon: <CheckCircle size={16} /> }
+    ];
+
+    if (order.status === "rejected_by_restaurant" || order.status === "cancelled") {
+      return [
+        ...statuses,
+        { status: order.status, label: "Cancelled", icon: <XCircle size={16} /> }
+      ];
+    }
+
+    return statuses.map((s) => {
+      const statusUpdate = order.statusUpdates?.find(update => update.status === s.status);
+      
+      return {
+        ...s,
+        active: order.status === s.status,
+        completed: getOrderStatusPercentage(order.status) > getOrderStatusPercentage(s.status),
+        date: statusUpdate ? formatOrderDate(statusUpdate.timestamp) : null
+      };
+    });
+  };
+  
+  const getStatusLabel = (status) => {
+    const statusLabels = {
+      "pending": "Pending",
+      "accepted_by_restaurant": "Preparing",
+      "ready_for_delivery": "Ready for Pickup",
+      "accepted_by_delivery": "Delivery Accepted",
+      "in_delivery": "On The Way",
+      "delivered": "Delivered",
+      "rejected_by_restaurant": "Rejected",
+      "cancelled": "Cancelled"
+    };
+    return statusLabels[status] || status;
   };
 
   return (
@@ -303,7 +311,7 @@ function CustomerDashboard() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">Customer Dashboard</h1>
-            <p className="text-gray-600">Welcome back {customerName}</p>
+            <p className="text-gray-600">Welcome back, {customerName}</p>
           </div>
           
           <div className="flex items-center gap-4">
@@ -394,7 +402,7 @@ function CustomerDashboard() {
                       <div className="relative">
                         {restaurant.image ? (
                           <img
-                            src={`${baseUrl}${restaurant.image}`}
+                            src={`${API_BASE_URL}${restaurant.image}`}
                             alt={restaurant.name}
                             className="w-full h-48 object-cover rounded-md"
                           />
@@ -452,12 +460,14 @@ function CustomerDashboard() {
             ) : (
               <div className="space-y-6">
                 {orders.map((order) => (
-                  <div key={order._id} className="border rounded-lg shadow-sm bg-white overflow-hidden">
+                  <div key={order.id} className="border rounded-lg shadow-sm bg-white overflow-hidden">
                     {/* Order Header */}
                     <div className="p-4 flex justify-between items-start border-b">
                       <div>
                         <div className="flex items-center">
-                          <h3 className="font-medium">Order #{order._id.slice(-6)}</h3>
+                        <h3 className="font-medium">
+  Order #{order?.id?.slice(-6) || order?._id?.slice(-6) || 'N/A'}
+</h3>
                           <span className="mx-2">•</span>
                           <span className="text-gray-600">{order.restaurantName}</span>
                         </div>
@@ -466,13 +476,13 @@ function CustomerDashboard() {
                       <div className="flex items-center">
                         <span className="flex items-center mr-3">
                           {getStatusIcon(order.status)}
-                          <span className="ml-1 text-sm font-medium">{order.status}</span>
+                          <span className="ml-1 text-sm font-medium">{getStatusLabel(order.status)}</span>
                         </span>
                         <button 
-                          onClick={() => toggleOrderDetails(order._id)}
+                          onClick={() => toggleOrderDetails(order.id)}
                           className="text-blue-500 hover:text-blue-700 text-sm font-medium"
                         >
-                          {expandedOrderId === order._id ? "Hide Details" : "View Details"}
+                          {expandedOrderId === order.id ? "Hide Details" : "View Details"}
                         </button>
                       </div>
                     </div>
@@ -500,7 +510,7 @@ function CustomerDashboard() {
                         </div>
                       </div>
                       
-                      {/* Enhanced Status Timeline with Estimated Times */}
+                      {/* Status Timeline */}
                       <div className="mt-4">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
                           {getStatusTimeline(order).map((s, index) => (
@@ -530,10 +540,10 @@ function CustomerDashboard() {
                                 {s.label}
                               </span>
                               {s.date && (
-                                <span className="text-xxs text-gray-500 mt-1 text-center">{s.date}</span>
+                                <span className="text-xs text-gray-500 mt-1 text-center">{s.date}</span>
                               )}
                               {s.active && !s.date && (
-                                <span className="text-xxs text-blue-500 mt-1">In progress</span>
+                                <span className="text-xs text-blue-500 mt-1">In progress</span>
                               )}
                             </div>
                           ))}
@@ -541,43 +551,23 @@ function CustomerDashboard() {
                       </div>
                     </div>
                     
-                    {/* Delivery Person Info (when order is on the way) */}
-                    {order.status === "On The Way" && order.deliveryPerson && (
-                      <div className="px-4 py-3 bg-blue-50 border-t border-blue-100">
-                        <div className="flex items-center">
-                          <div className="bg-blue-100 p-2 rounded-full mr-3">
-                            <User size={20} className="text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">Your delivery is on the way!</p>
-                            <p className="text-xs text-gray-600">Delivery person: {order.deliveryPerson}</p>
-                            {order.deliveryContact && (
-                              <p className="text-xs text-blue-600 mt-1">
-                                Contact: {order.deliveryContact}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
                     {/* Expanded Order Details */}
-                    {expandedOrderId === order._id && (
-                      <div className="p-4 bg-gray-50">
+                    {expandedOrderId === order.id && (
+                      <div className="p-4 bg-gray-50 border-t">
                         <div className="mb-4">
                           <h4 className="text-sm font-medium mb-2">Delivery Information</h4>
                           <div className="bg-white p-3 rounded border">
                             <div className="flex items-start mb-2">
                               <MapPin size={16} className="mr-2 text-gray-500 mt-1 flex-shrink-0" />
-                              <span className="text-sm">{order.address}</span>
+                              <span className="text-sm">{order.customerAddress}</span>
                             </div>
-                            {order.deliveryPerson && (
+                            {order.deliveryName && (
                               <div className="flex items-center">
                                 <User size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                                <span className="text-sm">Delivery by: {order.deliveryPerson}</span>
-                                {order.deliveryContact && (
+                                <span className="text-sm">Delivery by: {order.deliveryName}</span>
+                                {order.estimatedDeliveryTime && (
                                   <span className="ml-4 text-sm text-blue-600">
-                                    Contact: {order.deliveryContact}
+                                    Estimated: {order.estimatedDeliveryTime}
                                   </span>
                                 )}
                               </div>
@@ -603,8 +593,8 @@ function CustomerDashboard() {
                                 </tr>
                               </thead>
                               <tbody className="bg-white divide-y divide-gray-200">
-                                {order.items.map((item, idx) => (
-                                  <tr key={idx}>
+                                {order.items.map((item) => (
+                                  <tr key={item.id}>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                                       {item.name}
                                     </td>
@@ -617,11 +607,11 @@ function CustomerDashboard() {
                                   </tr>
                                 ))}
                                 <tr className="bg-gray-50">
-                                  <td colSpan="2" className="px-4 py-3 whitespace-nowrap text-sm font-medium text-right">
+                                  <td colSpan={2} className="px-4 py-3 whitespace-nowrap text-sm font-medium text-right">
                                     Total:
                                   </td>
                                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-right">
-                                    ${order.totalPrice?.toFixed(2) || '0.00'}
+                                    ${order.totalAmount.toFixed(2)}
                                   </td>
                                 </tr>
                               </tbody>
@@ -629,37 +619,11 @@ function CustomerDashboard() {
                           </div>
                         </div>
                         
-                        {/* Status Updates History */}
-                        {order.statusUpdates && order.statusUpdates.length > 0 && (
-                          <div className="mt-6">
-                            <h4 className="text-sm font-medium mb-2">Status History</h4>
-                            <div className="bg-white rounded border divide-y divide-gray-200">
-                              {order.statusUpdates
-                                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                                .map((update, idx) => (
-                                  <div key={idx} className="p-3 flex items-center">
-                                    <div className="mr-3">
-                                      {getStatusIcon(update.status)}
-                                    </div>
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium">{update.status}</p>
-                                      <p className="text-xs text-gray-500">
-                                        {formatOrderDate(update.timestamp)}
-                                      </p>
-                                    </div>
-                                    {update.note && (
-                                      <p className="text-xs text-gray-600 ml-2">({update.note})</p>
-                                    )}
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {(order.status === "Pending" || order.status === "Preparing") && (
+                        {/* Cancel Order button */}
+                        {(order.status === "pending" || order.status === "accepted_by_restaurant") && (
                           <div className="mt-4 flex justify-end">
                             <button
-                              onClick={() => cancelOrder(order._id)}
+                              onClick={() => cancelOrder(order.id)}
                               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
                             >
                               Cancel Order
@@ -679,7 +643,7 @@ function CustomerDashboard() {
       {/* Menu Modal */}
       {selectedRestaurant && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-gray-800">
                 {selectedRestaurant.name} Menu
@@ -703,32 +667,49 @@ function CustomerDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
                 <p className="mt-4 text-gray-600">Loading menu items...</p>
               </div>
-            ) : menuItems.length === 0 ? (
-              <p className="text-center py-8 text-gray-500">No menu items available for this restaurant.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {menuItems.map((item) => (
-                  <div key={item._id} className="border rounded-lg p-4 flex justify-between items-start hover:bg-gray-50">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-gray-600">${parseFloat(item.price).toFixed(2)}</p>
-                      {item.description && <p className="text-sm text-gray-500">{item.description}</p>}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {menuItems.length === 0 ? (
+                  <p className="text-center py-8 text-gray-500 col-span-full">No menu items available for this restaurant.</p>
+                ) : (
+                  menuItems.map((item) => (
+                    <div key={item._id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       {item.image && (
-                        <img 
-                          src={`${baseUrl}${item.image}`} 
-                          alt={item.name}
-                          className="mt-2 w-24 h-24 object-cover rounded-md"
-                        />
+                        <div className="relative h-48 w-full">
+                          <img 
+                            src={`${API_BASE_URL}${item.image}`} 
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback for image loading errors
+                              const target = e.target;
+                              target.onerror = null;
+                              target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                            }}
+                          />
+                        </div>
                       )}
+                      <div className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-lg">{item.name}</h3>
+                            <p className="text-gray-700 font-medium">${parseFloat(item.price).toFixed(2)}</p>
+                            {item.description && (
+                              <p className="text-sm text-gray-600 mt-2 line-clamp-2">{item.description}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => addToCart(item)}
+                            className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 ml-2 flex items-center justify-center"
+                            title="Add to cart"
+                          >
+                            <Plus size={18} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => addToCart(item)}
-                      className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 ml-2"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -778,10 +759,24 @@ function CustomerDashboard() {
                     {cart.map((item) => (
                       <li key={item._id} className="border-b pb-4">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-semibold">{item.name}</h3>
-                            <p className="text-gray-600">${parseFloat(item.price).toFixed(2)} each</p>
-                            <p className="text-sm text-gray-500">From: {item.restaurantName}</p>
+                          <div className="flex items-start">
+                            {item.image && (
+                              <img 
+                                src={`${API_BASE_URL}${item.image}`} 
+                                alt={item.name}
+                                className="w-16 h-16 object-cover rounded mr-3"
+                                onError={(e) => {
+                                  // Fallback for image loading errors
+                                  const target = e.target;
+                                  target.onerror = null;
+                                  target.src = 'https://via.placeholder.com/64?text=X';
+                                }}
+                              />
+                            )}
+                            <div>
+                              <h3 className="font-semibold">{item.name}</h3>
+                              <p className="text-gray-600">${parseFloat(item.price).toFixed(2)} each</p>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
@@ -806,7 +801,7 @@ function CustomerDashboard() {
                           </div>
                         </div>
                         <p className="text-right font-medium mt-1">
-                          ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                          ${(item.price * item.quantity).toFixed(2)}
                         </p>
                       </li>
                     ))}
@@ -855,6 +850,6 @@ function CustomerDashboard() {
       )}
     </div>
   );
-}
+};
 
-export default CustomerDashboard;
+export default CustomerPage;

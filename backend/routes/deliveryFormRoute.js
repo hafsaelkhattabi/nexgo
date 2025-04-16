@@ -6,15 +6,21 @@ const router = express.Router();
 // Create a new delivery
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
-
-    if (!name || !email || !phone || !address) {
+    const { name, email, phone, address, vehicleType } = req.body;
+    
+    if (!name || !email || !phone || !address || !vehicleType) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
-    const newDelivery = new Delivery({ name, email, phone, address });
+    
+    const newDelivery = new Delivery({ 
+      name, 
+      email, 
+      phone, 
+      address, 
+      vehicleType 
+    });
     await newDelivery.save();
-
+    
     res.status(201).json({ message: "Delivery added successfully!" });
   } catch (error) {
     console.error("Error adding delivery:", error);

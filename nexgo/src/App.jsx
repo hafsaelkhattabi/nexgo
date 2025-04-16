@@ -28,7 +28,7 @@ import DeliveryPage from "./page/DeliveryPage";
 function Layout({ children }) {
   const location = useLocation();
   const hideHeaderFooter = ["/login", "/register", "/auth",
-     "/customer", "/restaurant", "/delivery",
+     "/customer", "/restaurant", "/delivery","/admin/add-delivery", "/admin/add-restaurant",
      "/restaurant/dashboard", "/menu", "/delivery/dashboard", "/customer/dashboard", "/subscribe/delivery", "/order", "/admin", "/subscribe/partenaire"].includes(location.pathname);
 
   return (

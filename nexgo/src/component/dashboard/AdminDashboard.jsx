@@ -1,9 +1,10 @@
 import React, { useState, useContext } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Route, Routes } from "react-router-dom";
 import { LanguageContext } from "../../context/LanguageContext";
 import { ThemeContext } from "../../context/ThemeContext";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import DashboardOverview from "../DashboardOverview";
 
 function AdminDashboard() {
   const { language, translations } = useContext(LanguageContext);
@@ -16,24 +17,29 @@ function AdminDashboard() {
   return (
     <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"}`}>
       {/* Sidebar */}
-      <Sidebar 
-        className="" 
+      <Sidebar
+        className=""
         darkMode={darkMode}
-        translations={translations} 
+        translations={translations}
         language={language}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
       />
       
       {/* Main content area with Header and Outlet */}
-      <div className="flex flex-col flex-1 transition-all duration-300" 
-           style={{ marginLeft: `${sidebarWidth}px` }}>
+      <div 
+        className="flex flex-col flex-1 transition-all duration-300"
+        style={{ marginLeft: `${sidebarWidth}px` }}
+      >
         {/* Header */}
         <Header sidebarWidth={sidebarWidth} className="" />
         
-        {/* Main content (Outlet) with appropriate padding from the top for the fixed header */}
+        {/* Main content with appropriate padding from the top for the fixed header */}
         <div className="flex-1 p-6 mt-16">
-          <Outlet />
+          <Routes>
+            <Route index element={<DashboardOverview />} />
+            <Route path="/*" element={<Outlet />} />
+          </Routes>
         </div>
       </div>
     </div>

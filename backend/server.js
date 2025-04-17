@@ -4,14 +4,15 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const uploadRoutes = require("./routes/uploadRoutes");
 const deliveryRoutes = require('./routes/DeliveryRoutes');
-const restaurantRoutes = require("./routes/RestaurantRoutes");
-const deliveryRoute = require("./routes/deliveryRoute");
+// const restaurantRoutes = require("./routes/RestaurantRoutes");
+// const deliveryRoute = require("./routes/deliveryRoute");
 const authRoutes = require("./routes/authRoutes");
 const restaurantRoutesauth = require("./routes/restaurantRoutesauth");
 const restauraantroutesdash = require("./routes/restaurantroutesdash");
 const menu = require("./routes/menu");
 const order = require("./routes/order");
 const notificationRoutes = require("./routes/NotificationRoutes");
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 app.use(express.json());
@@ -29,10 +30,10 @@ mongoose
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
 // Routes
-app.use("/restaurants", restaurantRoutes); // Restaurant routes
+// app.use("/restaurants", restaurantRoutes); // Restaurant routes
 app.use("/image", uploadRoutes); // File upload routes
 app.use("/apply", deliveryRoutes); // Delivery application routes
-app.use("/deliveries", deliveryRoute); // Delivery form routes
+// app.use("/deliveries", deliveryRoute); // Delivery form routes
 app.use("/api/restaurant", restaurantRoutesauth);
 app.use("/login", authRoutes);
 app.use("/restaurants", restauraantroutesdash);
@@ -40,6 +41,7 @@ app.use("/deliveries", deliveryRoutes);
 app.use("/menu", menu);
 app.use("/orders", order);
 app.use("/notification", notificationRoutes);
+app.use('/dashboard', dashboardRoutes);
 
 // Start Server
 app.listen(PORT, () => {

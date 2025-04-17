@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 // Base URL for API - change this to your backend URL
 export const API_BASE_URL = "http://localhost:5000"; // Adjust to your backend URL
 
@@ -8,12 +9,26 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+
+
 // API service functions
 export const apiService = {
   // Restaurant functions
   getRestaurants: async () => {
     const response = await api.get("/restaurants");
     return response.data;
+  },
+
+
+  // Add this new method
+  getDashboardStats: async () => {
+    try {
+      const response = await api.get("/dashboard/stats");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      throw error;
+    }
   },
 
   getRestaurantById: async (restaurantId) => {

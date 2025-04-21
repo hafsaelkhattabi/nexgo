@@ -95,7 +95,7 @@ function RestaurantList() {
   }
 
   return (
-    <div className="p-8 mt-10">
+    <div className="p-8 mt-10 bg-[#f8f1e7]">
       <h1 className="text-4xl font-bold mb-8 text-center text-[#502314] mt-20">Restaurants</h1>
 
       {restaurants.length === 0 ? (

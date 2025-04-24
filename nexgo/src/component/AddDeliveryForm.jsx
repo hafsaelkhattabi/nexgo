@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Car, Bike, Navigation, Phone, Mail, User, MapPin } from "lucide-react";
+import { ThemeContext } from "../context/ThemeContext"; // Update path if needed
 
 const AddDeliveryForm = () => {
+  const { darkMode } = useContext(ThemeContext);
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,15 +40,21 @@ const AddDeliveryForm = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
+    <div className={`p-6 rounded-lg shadow-md transition-colors duration-300 ${
+      darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow-gray-200"
+    }`}>
       <div className="flex items-center justify-center mb-2">
         <Car className="text-yellow-500 mr-2" size={28} />
-        <h2 className="text-2xl font-bold  text-center text-[#502314]">Add Delivery</h2>
+        <h2 className={`text-2xl font-bold text-center transition-colors duration-300 ${
+          darkMode ? "text-gray-100" : "text-[#502314]"
+        }`}>Add Delivery</h2>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-sm font-medium mb-1 text-[#502314] flex items-center">
+          <label className={`text-sm font-medium mb-1 flex items-center transition-colors duration-300 ${
+            darkMode ? "text-gray-300" : "text-[#502314]"
+          }`}>
             <User size={16} className="mr-1" /> Name
           </label>
           <input
@@ -54,13 +63,19 @@ const AddDeliveryForm = () => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Enter name"
-            className="w-full p-2 border rounded-lg"
+            className={`w-full p-2 border rounded-lg transition-colors duration-300 ${
+              darkMode 
+                ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" 
+                : "bg-white border-gray-300"
+            }`}
             required
           />
         </div>
         
         <div>
-          <label className="text-sm font-medium mb-1 text-[#502314] flex items-center">
+          <label className={`text-sm font-medium mb-1 flex items-center transition-colors duration-300 ${
+            darkMode ? "text-gray-300" : "text-[#502314]"
+          }`}>
             <Mail size={16} className="mr-1" /> Email
           </label>
           <input
@@ -69,13 +84,19 @@ const AddDeliveryForm = () => {
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter email"
-            className="w-full p-2 border rounded-lg"
+            className={`w-full p-2 border rounded-lg transition-colors duration-300 ${
+              darkMode 
+                ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" 
+                : "bg-white border-gray-300"
+            }`}
             required
           />
         </div>
         
         <div>
-          <label className="text-sm font-medium mb-1 text-[#502314] flex items-center">
+          <label className={`text-sm font-medium mb-1 flex items-center transition-colors duration-300 ${
+            darkMode ? "text-gray-300" : "text-[#502314]"
+          }`}>
             <Phone size={16} className="mr-1" /> Phone
           </label>
           <input
@@ -84,13 +105,19 @@ const AddDeliveryForm = () => {
             value={formData.phone}
             onChange={handleChange}
             placeholder="Enter phone number"
-            className="w-full p-2 border rounded-lg"
+            className={`w-full p-2 border rounded-lg transition-colors duration-300 ${
+              darkMode 
+                ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" 
+                : "bg-white border-gray-300"
+            }`}
             required
           />
         </div>
         
         <div>
-          <label className="text-sm font-medium mb-1 text-[#502314] flex items-center">
+          <label className={`text-sm font-medium mb-1 flex items-center transition-colors duration-300 ${
+            darkMode ? "text-gray-300" : "text-[#502314]"
+          }`}>
             <MapPin size={16} className="mr-1" /> Address
           </label>
           <input
@@ -99,18 +126,36 @@ const AddDeliveryForm = () => {
             value={formData.address}
             onChange={handleChange}
             placeholder="Enter address"
-            className="w-full p-2 border rounded-lg"
+            className={`w-full p-2 border rounded-lg transition-colors duration-300 ${
+              darkMode 
+                ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" 
+                : "bg-white border-gray-300"
+            }`}
             required
           />
         </div>
         
         <div>
-          <label className="text-sm font-medium mb-1 text-[#502314] flex items-center">
+          <label className={`text-sm font-medium mb-1 flex items-center transition-colors duration-300 ${
+            darkMode ? "text-gray-300" : "text-[#502314]"
+          }`}>
             <Navigation size={16} className="mr-1" /> Vehicle Type
           </label>
           <div className="grid grid-cols-3 gap-2">
-            <label className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${formData.vehicleType === "car" ? "bg-yellow-100 border-yellow-400" : "bg-white"}`}>
-              <Car size={24} className={formData.vehicleType === "car" ? "text-[#502314]" : "text-gray-500"} />
+            <label className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+              formData.vehicleType === "car" 
+                ? darkMode 
+                  ? "bg-yellow-900 border-yellow-700 text-yellow-100" 
+                  : "bg-yellow-100 border-yellow-400"
+                : darkMode 
+                  ? "bg-gray-700 border-gray-600 text-gray-300" 
+                  : "bg-white"
+            }`}>
+              <Car size={24} className={
+                formData.vehicleType === "car" 
+                  ? darkMode ? "text-yellow-400" : "text-[#502314]" 
+                  : darkMode ? "text-gray-400" : "text-gray-500"
+              } />
               <input 
                 type="radio" 
                 name="vehicleType" 
@@ -122,8 +167,20 @@ const AddDeliveryForm = () => {
               <span className="mt-1 text-sm">Car</span>
             </label>
             
-            <label className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${formData.vehicleType === "motorcycle" ? "bg-yellow-100 border-yellow-400" : "bg-white"}`}>
-              <Bike size={24} className={formData.vehicleType === "motorcycle" ? "text-[#502314]" : "text-gray-500"} />
+            <label className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+              formData.vehicleType === "motorcycle" 
+                ? darkMode 
+                  ? "bg-yellow-900 border-yellow-700 text-yellow-100" 
+                  : "bg-yellow-100 border-yellow-400"
+                : darkMode 
+                  ? "bg-gray-700 border-gray-600 text-gray-300" 
+                  : "bg-white"
+            }`}>
+              <Bike size={24} className={
+                formData.vehicleType === "motorcycle" 
+                  ? darkMode ? "text-yellow-400" : "text-[#502314]" 
+                  : darkMode ? "text-gray-400" : "text-gray-500"
+              } />
               <input 
                 type="radio" 
                 name="vehicleType" 
@@ -135,8 +192,20 @@ const AddDeliveryForm = () => {
               <span className="mt-1 text-sm">Motorcycle</span>
             </label>
             
-            <label className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${formData.vehicleType === "bicycle" ? "bg-yellow-100 border-yellow-400" : "bg-white"}`}>
-              <Bike size={24} className={formData.vehicleType === "bicycle" ? "text-[#502314]" : "text-gray-500"} />
+            <label className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+              formData.vehicleType === "bicycle" 
+                ? darkMode 
+                  ? "bg-yellow-900 border-yellow-700 text-yellow-100" 
+                  : "bg-yellow-100 border-yellow-400"
+                : darkMode 
+                  ? "bg-gray-700 border-gray-600 text-gray-300" 
+                  : "bg-white"
+            }`}>
+              <Bike size={24} className={
+                formData.vehicleType === "bicycle" 
+                  ? darkMode ? "text-yellow-400" : "text-[#502314]" 
+                  : darkMode ? "text-gray-400" : "text-gray-500"
+              } />
               <input 
                 type="radio" 
                 name="vehicleType" 
@@ -153,7 +222,11 @@ const AddDeliveryForm = () => {
         <div className="flex justify-center pt-2">
           <button
             type="submit"
-            className="bg-[#FFC72C] text-[#502314] py-2 px-6 rounded-full font-bold hover:bg-[#502314] hover:text-white flex items-center transition-colors duration-300"
+            className={`py-2 px-6 rounded-full font-bold flex items-center transition-colors duration-300 ${
+              darkMode
+                ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                : "bg-[#FFC72C] text-[#502314] hover:bg-[#502314] hover:text-white"
+            }`}
           >
             <Car size={18} className="mr-2" />
             Add Delivery

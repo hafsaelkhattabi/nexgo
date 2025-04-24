@@ -109,51 +109,13 @@ function Header() {
 
           {/* About Us Dropdown */}
           <div className="relative" ref={aboutRef}>
-            <button
-              onClick={() => setIsAboutOpen(!isAboutOpen)}
-              className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
-            >
-              {translations[language]["about"]}
-            </button>
-            {isAboutOpen && (
-              <div
-                className={`absolute mt-2 w-48 rounded-lg shadow-lg ${
-                  darkMode ? "bg-gray-800 text-white" : "bg-white text-[#502314]"
-                }`}
-              >
-                <Link
-                  to="/our-mission"
-                  className={`block px-4 py-2 ${
-                    darkMode
-                      ? "hover:bg-gray-700"
-                      : "hover:bg-[#FFC72C] hover:text-[#502314]"
-                  }`}
-                >
-                  Our Mission
-                </Link>
-                <Link
-                  to="/careers"
-                  className={`block px-4 py-2 ${
-                    darkMode
-                      ? "hover:bg-gray-700"
-                      : "hover:bg-[#FFC72C] hover:text-[#502314]"
-                  }`}
-                >
-                  Careers
-                </Link>
-                <button
-                  onClick={() => window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" })}
-                  className={`block w-full text-left px-4 py-2 ${
-                    darkMode
-                      ? "hover:bg-gray-700"
-                      : "hover:bg-[#FFC72C] hover:text-[#502314]"
-                  }`}
-                >
-                  Contact Us
-                </button>
-              </div>
-            )}
-          </div>
+  <button
+    onClick={() => window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" })}
+    className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
+  >
+    {translations[language]["about"]}
+  </button>
+</div>
         </div>
 
         {/* Dark Mode & Language Toggle + Login Button */}

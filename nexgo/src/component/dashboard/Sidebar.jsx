@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
   Store,
   ChevronLeft,
   ChevronRight,
   PlusCircle,
-  Truck
+  Truck,
+  LogOut
 } from 'lucide-react';
 
-const SidebarItem = ({ icon: Icon, label, path, isCollapsed }) => {
+const SidebarItem = ({ icon: Icon, label, path, isCollapsed, onClick }) => {
   const location = useLocation();
   const isActive = location.pathname === path;
 
   return (
     <Link
       to={path}
+      onClick={onClick}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg transition-colors duration-200 group',
         isActive
@@ -41,9 +43,15 @@ const SidebarItem = ({ icon: Icon, label, path, isCollapsed }) => {
 
 const Sidebar = ({ className }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLogout = () => {
+    // You can add any logout logic here before redirecting
+    navigate('/');
   };
 
   return (
@@ -95,6 +103,17 @@ const Sidebar = ({ className }) => {
             isCollapsed={isCollapsed} 
           />
         </div>
+      </div>
+
+      {/* Sidebar Footer with Logout Button */}
+      <div className="py-4 px-3 border-t border-border/50">
+        <SidebarItem
+          icon={LogOut}
+          label="Sign Out"
+          path="/"
+          isCollapsed={isCollapsed}
+          onClick={handleLogout}
+        />
       </div>
     </div>
   );

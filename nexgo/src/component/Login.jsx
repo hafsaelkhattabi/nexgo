@@ -2,15 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import authService from "../lib/AuthService";
-import { ArrowRight, LockKeyhole, User } from "lucide-react";
+import { ArrowRight, LockKeyhole, User, Mail } from "lucide-react";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [loginField, setLoginField] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  console.log(isLoading)
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +29,10 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const response = await authService.login({ username, password });
+      const response = await authService.login({ 
+        login: loginField, // Can be either username or email
+        password 
+      });
       toast.success("Login successful");
       redirectBasedOnRole(response.role);
     } catch (error) {
@@ -43,9 +43,6 @@ const Login = () => {
   };
 
   return (
-
-    <div>
-
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">
       <div className="w-full max-w-md flex flex-col rounded-3xl bg-white/80 backdrop-blur-xl shadow-lg border border-border/40 p-8 sm:p-10">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-8 mx-auto">
@@ -55,19 +52,20 @@ const Login = () => {
         <h1 className="text-3xl font-semibold text-center mb-2">Welcome Back</h1>
         <p className="text-center text-muted-foreground mb-8">Sign in to your account</p>
 
-
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-
-              <User className="w-5 h-5 text-muted-foreground/60 text-[#502314]" />
-
+              {loginField.includes("@") ? (
+                <Mail className="w-5 h-5 text-muted-foreground/60 text-[#502314]" />
+              ) : (
+                <User className="w-5 h-5 text-muted-foreground/60 text-[#502314]" />
+              )}
             </div>
             <input
               type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username or Email"
+              value={loginField}
+              onChange={(e) => setLoginField(e.target.value)}
               className="w-full px-10 py-3 bg-white/50 border border-border/60 rounded-xl focus:border-primary/40 focus:ring-primary/30"
               required
               disabled={isLoading}
@@ -76,9 +74,7 @@ const Login = () => {
           
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-
               <LockKeyhole className="w-5 h-5 text-muted-foreground/60 text-[#502314]" />
-
             </div>
             <input
               type="password"
@@ -98,9 +94,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-
             className="w-full text-[#502314] bg-primary py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-[#FFC72C] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 disabled:opacity-70"
-
           >
             {isLoading ? <div className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4" /></>}
           </button>
@@ -111,9 +105,7 @@ const Login = () => {
         </form>
       </div>
     </div>
-    </div>
-    
   );
- };
+};
 
 export default Login;

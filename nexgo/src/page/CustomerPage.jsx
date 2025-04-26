@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { 
   ShoppingCart, Utensils, CheckCircle, XCircle, Clock, 
-  Plus, Minus, Trash2, User, MapPin, RefreshCw 
+  Plus, Minus, Trash2, User, MapPin, RefreshCw, LogOut
 } from "lucide-react";
 import { apiService, API_BASE_URL } from "../services/ApiServices";
 import OrderCard from "../component/OrderCard";
@@ -44,6 +44,14 @@ const CustomerPage = () => {
     
     return () => clearInterval(pollInterval);
   }, []);
+
+  const handleLogout = () => {
+    // Clear any auth tokens from localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('customerId');
+    // Redirect to home page
+    window.location.href = '/';
+  };
 
   const fetchRestaurants = async () => {
     setLoading(prev => ({ ...prev, restaurants: true }));
@@ -313,7 +321,7 @@ const CustomerPage = () => {
             <h1 className="text-2xl font-bold">Customer Dashboard</h1>
             <p className="text-gray-600">Welcome back, {customerName}</p>
           </div>
-          
+    
           <div className="flex items-center gap-4">
             {activeTab === "orders" && (
               <button 
@@ -338,6 +346,13 @@ const CustomerPage = () => {
                   </span>
                 )}
               </button>
+              <button 
+      onClick={handleLogout}
+      className="flex items-center px-4 py-2 bg-white border border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+    >
+      <LogOut size={18} />
+      <span>Sign Out</span>
+          </button>
             </div>
           </div>
         </div>

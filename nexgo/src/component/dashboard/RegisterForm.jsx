@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Building, UserCog } from 'lucide-react';
-import AuthService from '../../services/AuthService';
+import authService from '../../services/AuthService';
 
 const RegisterUserForm = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,8 @@ const RegisterUserForm = () => {
     role: 'restaurant'
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,11 +29,26 @@ const RegisterUserForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setSuccessMessage('');
+    setErrorMessage('');
     
     try {
-      const result = await AuthService.register(formData);
+      let result;
+      
+      // Use the specific registration methods based on role
+      if (formData.role === 'restaurant') {
+        result = await authService.registerRestaurant(formData);
+      } else if (formData.role === 'delivery') {
+        result = await authService.registerDelivery(formData);
+      } else {
+        // Fallback to generic register for other roles (like admin)
+        result = await authService.register(formData);
+      }
+      
       console.log('Registration successful:', result);
-      alert(`${formData.role} user registered successfully!`);
+      setSuccessMessage(`${formData.role} user registered successfully!`);
+      
+      // Clear form data
       setFormData({
         username: '',
         email: '',
@@ -40,11 +57,24 @@ const RegisterUserForm = () => {
         role: 'restaurant'
       });
     } catch (error) {
-      alert(error.message || "Registration failed");
+      console.error('Registration error:', error);
+      setErrorMessage(error.response?.data?.message || error.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Only admin should be able to access this form
+  if (!authService.isAdmin()) {
+    return (
+      <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
+        <div className="p-4 bg-red-100 text-red-700 rounded-md">
+          <h2 className="text-lg font-semibold mb-2">Access Denied</h2>
+          <p>You must be an administrator to register new users.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
@@ -52,6 +82,18 @@ const RegisterUserForm = () => {
         <h2 className="text-2xl font-bold mb-2">Register New User</h2>
         <p className="text-gray-600">Create accounts for restaurant owners or delivery personnel</p>
       </div>
+      
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+          {successMessage}
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+          {errorMessage}
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="relative">
@@ -131,7 +173,6 @@ const RegisterUserForm = () => {
           >
             <option value="restaurant">Restaurant</option>
             <option value="delivery">Delivery Personnel</option>
-            <option value="admin">Admin</option>
           </select>
         </div>
         

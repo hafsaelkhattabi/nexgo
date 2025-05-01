@@ -1,53 +1,171 @@
+// import axios from 'axios';
 
+// class AuthService {
+//   constructor() {
+//     // Admin credentials hardcoded - not ideal for production but meets requirements
+//     this.adminCredentials = {
+//       email: "admin@example.com",
+//       password: "admin123",
+//     };
+    
+//     this.tokenKey = "auth_token";
+//     this.userKey = "user_data";
+//   }
+
+//   async login(credentials) {
+//     // Special check for admin login
+//     if (
+//       (credentials.login === this.adminCredentials.email && 
+//       credentials.password === this.adminCredentials.password) ||
+//       // If you want to also allow admin username login
+//       (credentials.login === "admin" && 
+//       credentials.password === this.adminCredentials.password)
+//     ) {
+//       // Create admin user data
+//       const adminUser = {
+//         id: "admin-id",
+//         name: "Administrator",
+//         email: this.adminCredentials.email,
+//         role: "admin"
+//       };
+      
+//       // Store admin session
+//       localStorage.setItem(this.tokenKey, "admin-token-hardcoded");
+//       localStorage.setItem(this.userKey, JSON.stringify(adminUser));
+      
+//       return adminUser;
+//     }
+    
+//     // Regular login for other users goes to API
+//     const response = await axios.post('/api/auth/login', credentials);
+    
+//     if (response.data.token) {
+//       localStorage.setItem(this.tokenKey, response.data.token);
+//       localStorage.setItem(this.userKey, JSON.stringify(response.data.user));
+//     }
+    
+//     return response.data.user;
+//   }
+
+//   logout() {
+//     localStorage.removeItem(this.tokenKey);
+//     localStorage.removeItem(this.userKey);
+//   }
+
+//   isAuthenticated() {
+//     return !!localStorage.getItem(this.tokenKey);
+//   }
+
+//   getAuthToken() {
+//     return localStorage.getItem(this.tokenKey);
+//   }
+
+//   getUserData() {
+//     const userData = localStorage.getItem(this.userKey);
+//     return userData ? JSON.parse(userData) : null;
+//   }
+
+//   getUserRole() {
+//     const userData = this.getUserData();
+//     return userData ? userData.role : null;
+//   }
+// }
+
+// const authService = new AuthService();
+// export default authService;
 import axios from 'axios';
 
 class AuthService {
   constructor() {
-    // Admin credentials hardcoded - not ideal for production but meets requirements
+    // Admin credentials (hardcoded for demo purposes)
     this.adminCredentials = {
       email: "admin@example.com",
       password: "admin123",
     };
-    
+
+    // Axios instance configured for backend
+    this.api = axios.create({
+      baseURL: 'http://localhost:5000', // Backend server
+    });
+
     this.tokenKey = "auth_token";
     this.userKey = "user_data";
   }
 
+  // ========================
+  // Authentication Methods
+  // ========================
   async login(credentials) {
-    // Special check for admin login
+    // Admin login bypass
     if (
-      (credentials.login === this.adminCredentials.email && 
-      credentials.password === this.adminCredentials.password) ||
-      // If you want to also allow admin username login
-      (credentials.login === "admin" && 
-      credentials.password === this.adminCredentials.password)
+      (credentials.login === this.adminCredentials.email &&
+        credentials.password === this.adminCredentials.password) ||
+      (credentials.login === "admin" &&
+        credentials.password === this.adminCredentials.password)
     ) {
-      // Create admin user data
       const adminUser = {
         id: "admin-id",
         name: "Administrator",
         email: this.adminCredentials.email,
         role: "admin"
       };
-      
-      // Store admin session
+
       localStorage.setItem(this.tokenKey, "admin-token-hardcoded");
       localStorage.setItem(this.userKey, JSON.stringify(adminUser));
-      
       return adminUser;
     }
-    
-    // Regular login for other users goes to API
-    const response = await axios.post('/api/auth/login', credentials);
-    
-    if (response.data.token) {
-      localStorage.setItem(this.tokenKey, response.data.token);
-      localStorage.setItem(this.userKey, JSON.stringify(response.data.user));
+
+    // Regular user login
+    try {
+      const response = await this.api.post('/api/auth/login', {
+        email: credentials.login,  // adapt "login" to "email"
+        password: credentials.password
+      });
+      
+      
+      if (response.data.token) {
+        localStorage.setItem(this.tokenKey, response.data.token);
+        localStorage.setItem(this.userKey, JSON.stringify(this.decodeToken(response.data.token)));
+      }
+      return this.getUserData();
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
     }
-    
-    return response.data.user;
   }
 
+  // ========================
+  // Registration Methods
+  // ========================
+  async register(userData) {
+    try {
+      const response = await this.api.post('/api/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
+    }
+  }
+
+  async registerRestaurant(restaurantData) {
+    const data = {
+      ...restaurantData,
+      role: 'restaurant'
+    };
+    return this.register(data);
+  }
+
+  async registerDelivery(deliveryData) {
+    const data = {
+      ...deliveryData,
+      role: 'delivery'
+    };
+    return this.register(data);
+  }
+
+  // ========================
+  // Session Management
+  // ========================
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
@@ -66,11 +184,50 @@ class AuthService {
     return userData ? JSON.parse(userData) : null;
   }
 
+  // ========================
+  // Role Helpers
+  // ========================
   getUserRole() {
     const userData = this.getUserData();
     return userData ? userData.role : null;
   }
+
+  isAdmin() {
+    return this.getUserRole() === 'admin';
+  }
+
+  isRestaurant() {
+    return this.getUserRole() === 'restaurant';
+  }
+
+  isDelivery() {
+    return this.getUserRole() === 'delivery';
+  }
+
+  // ========================
+  // Utilities
+  // ========================
+  decodeToken(token) {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload);
+      return JSON.parse(decoded);
+    } catch (err) {
+      console.error("Token decoding failed:", err);
+      return null;
+    }
+  }
+
+  getHomePath() {
+    switch(this.getUserRole()) {
+      case 'admin': return '/admin';
+      case 'restaurant': return '/restaurant';
+      case 'delivery': return '/delivery';
+      default: return '/login';
+    }
+  }
 }
 
+// Singleton instance
 const authService = new AuthService();
 export default authService;

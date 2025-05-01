@@ -11,10 +11,9 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (authService.isAuthenticated()) {
-      const role = authService.getUserRole();
-      redirectBasedOnRole(role);
-    }
+    // ✅ Always log out user when visiting login page
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   }, []);
 
   const redirectBasedOnRole = (role) => {
@@ -33,25 +32,19 @@ const Login = () => {
         login: loginField, // Can be either username or email
         password 
       });
-  //     toast.success("Login successful");
-  //     redirectBasedOnRole(response.role);
-  //   } catch (error) {
-  //     toast.error(error.response?.data?.message || "Invalid credentials");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  if (response.role === "admin") {
-    navigate("/admin");
-  } else {
-    redirectBasedOnRole(response.role);
-  }
-} catch (error) {
-  toast.error(error.response?.data?.message || "Invalid credentials");
-} finally {
-  setIsLoading(false);
-}
-};
+
+      // Store token and user role (if you do this)
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response));
+
+      // Redirect based on role
+      redirectBasedOnRole(response.role);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid credentials");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">

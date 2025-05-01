@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import authService from "../lib/AuthService";
+import authService from "../services/AuthService";
 import { ArrowRight, LockKeyhole, User, Mail } from "lucide-react";
 
 const Login = () => {
@@ -18,9 +18,9 @@ const Login = () => {
   }, []);
 
   const redirectBasedOnRole = (role) => {
-    if (role === "restaurant") navigate("/restaurant/dashboard");
-    else if (role === "delivery") navigate("/delivery/dashboard");
-    else if (role === "customer") navigate("/customer/dashboard");
+    if (role === "restaurant") navigate("/restaurant");
+    else if (role === "delivery") navigate("/delivery");
+    else if (role === "customer") navigate("/customer");
     else if (role === "admin") navigate("/admin");
   };
 
@@ -33,14 +33,25 @@ const Login = () => {
         login: loginField, // Can be either username or email
         password 
       });
-      toast.success("Login successful");
-      redirectBasedOnRole(response.role);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid credentials");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     toast.success("Login successful");
+  //     redirectBasedOnRole(response.role);
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message || "Invalid credentials");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  if (response.role === "admin") {
+    navigate("/admin");
+  } else {
+    redirectBasedOnRole(response.role);
+  }
+} catch (error) {
+  toast.error(error.response?.data?.message || "Invalid credentials");
+} finally {
+  setIsLoading(false);
+}
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">

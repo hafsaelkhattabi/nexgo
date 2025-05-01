@@ -1,5 +1,5 @@
-// import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Header from "./component/Header";
@@ -24,13 +24,32 @@ import PartnerRequest from "./component/PartnerRequest";
 import CustomerPage from "./page/CustomerPage";
 import RestaurantPage from "./page/RestaurantPage";
 import DeliveryPage from "./page/DeliveryPage";
+import RegisterForm from "./component/dashboard/RegisterForm";
+import AuthGuard from "./component/AuthGuard";
+import ProtectedRoute from "./component/ProtectedRoute";
 
 function Layout({ children }) {
   const location = useLocation();
-  const hideHeaderFooter = ["/login", "/register", "/auth",
-     "/customer", "/restaurant", "/delivery","/admin/add-delivery", "/admin/add-restaurant",
-     "/restaurant/dashboard", "/menu", "/delivery/dashboard", "/customer/dashboard", "/subscribe/delivery", "/order", "/admin", "/subscribe/partenaire"].includes(location.pathname);
-
+  const hideHeaderFooter = [
+    "/login", 
+    "/register", 
+    "/auth",
+    "/customer", 
+    "/restaurant", 
+    "/delivery",
+    "/admin/add-delivery", 
+    "/admin/add-restaurant",
+    "/admin/register-user",
+    "/restaurant/dashboard", 
+    "/menu", 
+    "/delivery/dashboard", 
+    "/customer/dashboard", 
+    "/subscribe/delivery", 
+    "/order", 
+    "/admin", 
+    "/subscribe/partenaire"
+  ].includes(location.pathname);
+  
   return (
     <>
       {!hideHeaderFooter && <Header />}
@@ -47,8 +66,18 @@ function App() {
         <LanguageProvider>
           <Layout>
             <Routes>
-              <Route
-                path="/"
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Navigate to="/login" />} />
+              <Route path="/register" element={<Register/>} />
+              <Route path="/auth" element={<Login />} />
+              <Route path="/restaurants" element={<RestaurantList />} />
+              <Route path="/subscribe/delivery" element={<DeliveryApplication />} />
+              <Route path="/subscribe/partenaire" element={<PartnerRequest />} />
+              
+              {/* Home page with components */}
+              <Route 
+                path="/home" 
                 element={
                   <>
                     <Hero />
@@ -57,27 +86,54 @@ function App() {
                   </>
                 }
               />
-              <Route path="/login" element={<Login />} /> 
-              <Route path="/register" element={<Register/>} />
-              {/* <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} /> */}
-              <Route path="/menu" element={<MenuManagement />} />
-              {/* <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
-              <Route path="/customer/dashboard" element={<CustomerDashboard />} /> */}
 
-        <Route path="/customer" element={<CustomerPage />} />
-        <Route path="/restaurant" element={<RestaurantPage />} />
-        <Route path="/delivery" element={<DeliveryPage />} />
+              {/* Protected admin routes */}
+              <Route path="/admin/*" element={
+                <ProtectedRoute allowedRole="admin">
+                  <Routes>
+                    <Route path="/" element={<AdminDashboard />} />
+                    <Route path="/dashboard" element={<Navigate to="/admin" />} />
+                    <Route path="/add-delivery" element={<AddDeliveryForm />} />
+                    <Route path="/add-restaurant" element={<AddRestaurantForm />} />
+                    <Route path="/register-user" element={<RegisterForm />} />
+                  </Routes>
+                </ProtectedRoute>
+              } />
 
+              {/* Restaurant protected routes */}
+              <Route path="/restaurant/*" element={
+                <ProtectedRoute allowedRole="restaurant">
+                  <Routes>
+                    <Route path="/" element={<RestaurantPage />} />
+                    <Route path="/dashboard" element={<Navigate to="/restaurant" />} />
+                    <Route path="/menu" element={<MenuManagement />} />
+                  </Routes>
+                </ProtectedRoute>
+              } />
 
-              <Route element={<PrivateRoute />}/>
-              <Route path="/admin" element={<AdminDashboard />}></Route>
-              <Route path="/admin/add-delivery" element={<AddDeliveryForm />} />
-              <Route path="/auth" element={<Login />} />
-              <Route path="/admin/add-restaurant" element={<AddRestaurantForm />} />
-              <Route path="/restaurants" element={<RestaurantList />} />
-              <Route path="/order" element={<OrderPage />} />
-              <Route path="/subscribe/delivery" element={<DeliveryApplication />} />
-              <Route path="/subscribe/partenaire" element={<PartnerRequest />} />
+              {/* Delivery protected routes */}
+              <Route path="/delivery/*" element={
+                <ProtectedRoute allowedRole="delivery">
+                  <Routes>
+                    <Route path="/" element={<DeliveryPage />} />
+                    <Route path="/dashboard" element={<Navigate to="/delivery" />} />
+                  </Routes>
+                </ProtectedRoute>
+              } />
+
+              {/* Customer protected routes */}
+              <Route path="/customer/*" element={
+                <ProtectedRoute allowedRole="customer">
+                  <Routes>
+                    <Route path="/" element={<CustomerPage />} />
+                    <Route path="/dashboard" element={<Navigate to="/customer" />} />
+                    <Route path="/order" element={<OrderPage />} />
+                  </Routes>
+                </ProtectedRoute>
+              } />
+
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
           </Layout>
         </LanguageProvider>

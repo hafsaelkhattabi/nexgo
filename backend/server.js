@@ -6,13 +6,14 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const deliveryRoutes = require('./routes/DeliveryRoutes');
 // const restaurantRoutes = require("./routes/RestaurantRoutes");
 // const deliveryRoute = require("./routes/deliveryRoute");
-const authRoutes = require("./routes/authRoutes");
+// const authRoutes = require("./routes/authRoutes");
 const restaurantRoutesauth = require("./routes/restaurantRoutesauth");
 const restauraantroutesdash = require("./routes/restaurantroutesdash");
 const menu = require("./routes/menu");
 const order = require("./routes/order");
 const notificationRoutes = require("./routes/NotificationRoutes");
 const dashboardRoutes = require('./routes/dashboard');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 app.use(express.json());
@@ -42,6 +43,7 @@ app.use("/menu", menu);
 app.use("/orders", order);
 app.use("/notification", notificationRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/api/auth', authRoutes);
 
 // Start Server
 app.listen(PORT, () => {

@@ -7,7 +7,8 @@ import {
   ChevronRight,
   PlusCircle,
   Truck,
-  LogOut
+  LogOut,
+  UserPlus
 } from 'lucide-react';
 
 const SidebarItem = ({ icon: Icon, label, path, isCollapsed, onClick }) => {
@@ -90,6 +91,13 @@ const Sidebar = ({ className }) => {
       {/* Sidebar Content */}
       <div className="flex-1 overflow-y-auto py-4 px-3">
         <div className="space-y-1">
+          {/* Add the new Register User item */}
+          <SidebarItem 
+            icon={UserPlus} 
+            label="Register User" 
+            path="/admin/register-user" 
+            isCollapsed={isCollapsed} 
+          />
           <SidebarItem 
             icon={Store} 
             label="Add Restaurant" 

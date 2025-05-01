@@ -68,7 +68,7 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Navigate to="/login" />} />
+              <Route path="/" element={<Navigate to="/home" />} />
               <Route path="/register" element={<Register/>} />
               <Route path="/auth" element={<Login />} />
               <Route path="/restaurants" element={<RestaurantList />} />

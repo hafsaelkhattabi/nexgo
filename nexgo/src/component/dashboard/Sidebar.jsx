@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
+import authService from '../../services/AuthService';
 import {
   Store,
   ChevronLeft,
@@ -51,8 +52,8 @@ const Sidebar = ({ className }) => {
   };
 
   const handleLogout = () => {
-    // You can add any logout logic here before redirecting
-    navigate('/');
+    authService.logout(); // Clear token from localStorage
+    navigate('/login');   // Go directly to login route
   };
 
   return (

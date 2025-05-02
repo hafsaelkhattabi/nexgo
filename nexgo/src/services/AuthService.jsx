@@ -73,6 +73,7 @@
 
 // const authService = new AuthService();
 // export default authService;
+
 import axios from 'axios';
 
 class AuthService {
@@ -85,7 +86,7 @@ class AuthService {
 
     // Axios instance configured for backend
     this.api = axios.create({
-      baseURL: 'http://localhost:5000', // Backend server
+      baseURL: 'http://localhost:5000', // Your backend server
     });
 
     this.tokenKey = "auth_token";
@@ -98,9 +99,9 @@ class AuthService {
   async login(credentials) {
     // Admin login bypass
     if (
-      (credentials.login === this.adminCredentials.email &&
+      (credentials.email === this.adminCredentials.email &&
         credentials.password === this.adminCredentials.password) ||
-      (credentials.login === "admin" &&
+      (credentials.email === "admin" &&
         credentials.password === this.adminCredentials.password)
     ) {
       const adminUser = {
@@ -117,16 +118,16 @@ class AuthService {
 
     // Regular user login
     try {
-      const response = await this.api.post('/api/auth/login', {
-        email: credentials.login,  // adapt "login" to "email"
+      const response = await this.api.post('/restaurants/login', {
+        email: credentials.email, // ✅ FIXED: use `email` instead of `login`
         password: credentials.password
       });
-      
-      
+
       if (response.data.token) {
         localStorage.setItem(this.tokenKey, response.data.token);
-        localStorage.setItem(this.userKey, JSON.stringify(this.decodeToken(response.data.token)));
+        localStorage.setItem(this.userKey, JSON.stringify(response.data));
       }
+
       return this.getUserData();
     } catch (error) {
       console.error("Login error:", error);
@@ -207,19 +208,8 @@ class AuthService {
   // ========================
   // Utilities
   // ========================
-  decodeToken(token) {
-    try {
-      const payload = token.split('.')[1];
-      const decoded = atob(payload);
-      return JSON.parse(decoded);
-    } catch (err) {
-      console.error("Token decoding failed:", err);
-      return null;
-    }
-  }
-
   getHomePath() {
-    switch(this.getUserRole()) {
+    switch (this.getUserRole()) {
       case 'admin': return '/admin';
       case 'restaurant': return '/restaurant';
       case 'delivery': return '/delivery';

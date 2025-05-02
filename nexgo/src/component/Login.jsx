@@ -28,17 +28,21 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const response = await authService.login({ 
-        login: loginField, // Can be either username or email
+      await authService.login({ 
+        login: loginField,
         password 
       });
 
-      // Store token and user role (if you do this)
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response));
+      const user = authService.getUserData();
 
-      // Redirect based on role
-      redirectBasedOnRole(response.role);
+      if (!user) {
+        throw new Error("Failed to retrieve user data");
+      }
+
+      localStorage.setItem("token", authService.getAuthToken());
+      localStorage.setItem("user", JSON.stringify(user));
+
+      redirectBasedOnRole(user.role);
     } catch (error) {
       toast.error(error.response?.data?.message || "Invalid credentials");
     } finally {
@@ -113,3 +117,4 @@ const Login = () => {
 };
 
 export default Login;
+

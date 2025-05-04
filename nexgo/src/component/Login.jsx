@@ -29,7 +29,7 @@ const Login = () => {
     
     try {
       await authService.login({ 
-        login: loginField,
+        email: loginField,
         password 
       });
 

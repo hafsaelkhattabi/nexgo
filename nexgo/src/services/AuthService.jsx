@@ -78,15 +78,13 @@ import axios from 'axios';
 
 class AuthService {
   constructor() {
-    // Admin credentials (hardcoded for demo purposes)
     this.adminCredentials = {
       email: "admin@example.com",
       password: "admin123",
     };
 
-    // Axios instance configured for backend
     this.api = axios.create({
-      baseURL: 'http://localhost:5000', // Your backend server
+      baseURL: 'http://localhost:5000',
     });
 
     this.tokenKey = "auth_token";
@@ -97,13 +95,17 @@ class AuthService {
   // Authentication Methods
   // ========================
   async login(credentials) {
-    // Admin login bypass
-    if (
+    console.log("Login attempt with:", credentials);
+
+    // Check for hardcoded admin login
+    const isHardcodedAdmin =
       (credentials.email === this.adminCredentials.email &&
         credentials.password === this.adminCredentials.password) ||
       (credentials.email === "admin" &&
-        credentials.password === this.adminCredentials.password)
-    ) {
+        credentials.password === this.adminCredentials.password);
+
+    if (isHardcodedAdmin) {
+      console.log("Logging in as hardcoded admin...");
       const adminUser = {
         id: "admin-id",
         name: "Administrator",
@@ -118,8 +120,10 @@ class AuthService {
 
     // Regular user login
     try {
+      console.log("Falling back to backend login...");
+      console.log("Login attempt with:", credentials);
       const response = await this.api.post('/restaurants/login', {
-        email: credentials.email, // ✅ FIXED: use `email` instead of `login`
+        email: credentials.email,
         password: credentials.password
       });
 
@@ -218,6 +222,5 @@ class AuthService {
   }
 }
 
-// Singleton instance
 const authService = new AuthService();
 export default authService;

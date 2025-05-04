@@ -1,4 +1,4 @@
-// backend/routes/uploadMiddleware.js
+
 const multer = require("multer");
 const path = require("path");
 

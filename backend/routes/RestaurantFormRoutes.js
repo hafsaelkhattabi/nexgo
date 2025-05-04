@@ -76,9 +76,10 @@ router.post("/", uploadMiddleware, async (req, res) => {
     }
     
     // Handle the image file
-    const imagePath = req.files && req.files["image"] 
-      ? `/uploads/${req.files["image"][0].filename}` 
-      : "/placeholder.svg";
+    const imagePath =
+  req.files && req.files["image"] && req.files["image"][0]
+    ? `/uploads/${req.files["image"][0].filename}`
+    : "/placeholder.svg";
     
     // Create new restaurant
     const newRestaurant = new Restaurant({
@@ -100,7 +101,7 @@ router.post("/", uploadMiddleware, async (req, res) => {
     const newUser = new User({
       email,
       password: hashedPassword,
-      role: "restaurant_owner",
+      role: "restaurant",
       restaurant: savedRestaurant._id
     });
     

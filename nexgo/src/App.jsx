@@ -39,7 +39,7 @@ function Layout({ children }) {
     "/delivery",
     "/admin/add-delivery", 
     "/admin/add-restaurant",
-    "/admin/register-user",  // Added this path for the new route
+    "/admin/register-user",  
     "/restaurant/dashboard", 
     "/menu", 
     "/delivery/dashboard", 

@@ -22,42 +22,42 @@ const RestaurantPage = () => {
     description: ""
   }]);
 
-  // useEffect(() => {
-  //   const storedId = localStorage.getItem('restaurantId');
-  //   if (storedId) {
-  //     setRestaurantId(storedId);
-  //     return;
-  //   }
-    
-  //   const urlParams = new URLSearchParams(window.location.search);
-  //   const urlRestaurantId = urlParams.get('restaurantId');
-  //   if (urlRestaurantId) {
-  //     setRestaurantId(urlRestaurantId);
-  //     localStorage.setItem('restaurantId', urlRestaurantId);
-  //   }
-  // }, []);
-
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
+    const storedId = localStorage.getItem('restaurantId');
+    if (storedId) {
+      setRestaurantId(storedId);
       return;
     }
-  
-    axios
-      .get("http://localhost:5000/restaurant", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        setRestaurantData(res.data); // or however you store the restaurant info
-      })
-      .catch((err) => {
-        console.error("Failed to fetch restaurant data", err);
-        navigate("/login"); // Invalid token or not logged in
-      });
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRestaurantId = urlParams.get('restaurantId');
+    if (urlRestaurantId) {
+      setRestaurantId(urlRestaurantId);
+      localStorage.setItem('restaurantId', urlRestaurantId);
+    }
   }, []);
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/login");
+  //     return;
+  //   }
+  
+  //   axios
+  //     .get("http://localhost:5000/restaurant", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     })
+  //     .then((res) => {
+  //       setRestaurantData(res.data); // or however you store the restaurant info
+  //     })
+  //     .catch((err) => {
+  //       console.error("Failed to fetch restaurant data", err);
+  //       navigate("/login"); // Invalid token or not logged in
+  //     });
+  // }, []);
   
 
 

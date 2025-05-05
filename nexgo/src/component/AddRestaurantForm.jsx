@@ -247,21 +247,40 @@ function AddRestaurantForm() {
     if (!validateForm()) return;
     
     setIsLoading(true);
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("address", formData.address);
-    data.append("cuisine", formData.cuisine);
-    data.append("contact", formData.contact);
-    data.append("email", formData.email);
-    data.append("password", formData.password);
-    if (formData.image) data.append("image", formData.image);
-
+    setError("");
+    
     try {
+      // Create FormData object properly
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("address", formData.address);
+      data.append("cuisine", formData.cuisine);
+      data.append("contact", formData.contact);
+      data.append("email", formData.email);
+      data.append("password", formData.password);
+      
+      // Make sure we only append the image if it exists
+      if (formData.image) {
+        data.append("image", formData.image);
+      }
+      
+      // Debug FormData contents
+      console.log("Submitting form data:", {
+        name: formData.name,
+        address: formData.address,
+        cuisine: formData.cuisine,
+        contact: formData.contact,
+        email: formData.email,
+        hasImage: !!formData.image
+      });
+      
       // Register restaurant with user account
       const response = await axios.post("http://localhost:5000/restaurants", data, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { 
+          "Content-Type": "multipart/form-data"
+        },
       });
-
+  
       if (response.status === 201) {
         // Store token in localStorage
         localStorage.setItem("token", response.data.token);
@@ -276,7 +295,39 @@ function AddRestaurantForm() {
       }
     } catch (error) {
       console.error("Error:", error);
-      setError(error.response?.data?.message || "An error occurred while registering the restaurant.");
+      
+      // Better error handling
+      if (error.response) {
+        console.log("Response data:", error.response.data);
+        console.log("Response status:", error.response.status);
+        
+        // Handle specific error cases
+        if (error.response.data && error.response.data.message) {
+          if (error.response.data.message === "Email already in use") {
+            setError("This email is already registered. Please use a different email address.");
+          } else {
+            setError(error.response.data.message);
+          }
+        } else if (error.response.data && error.response.data.error) {
+          // Check for common error patterns in the error message
+          const errorMsg = error.response.data.error;
+          if (errorMsg.includes("duplicate key error")) {
+            setError("This email is already registered. Please use a different email address.");
+          } else {
+            setError("Server error: " + errorMsg);
+          }
+        } else {
+          setError("An error occurred while registering the restaurant.");
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.log("Request error:", error.request);
+        setError("No response from server. Please check your internet connection.");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error message:", error.message);
+        setError("An error occurred while processing your request.");
+      }
     } finally {
       setIsLoading(false);
     }

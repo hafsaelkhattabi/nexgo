@@ -12,16 +12,33 @@ const DeliveryPage = () => {
   
   // Mock driver ID - replace with actual authentication
   const driverId = "d1";
-  const driverName = "Mike Johnson";
+  const driverName = "";
+  
+  // useEffect(() => {
+  //   loadOrders();
+    
+  //   // Refresh orders every 10 seconds
+  //   const interval = setInterval(loadOrders, 10000);
+  //   return () => clearInterval(interval);
+  // }, []);
   
   useEffect(() => {
-    loadOrders();
-    
-    // Refresh orders every 10 seconds
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      alert("Not logged in");
+      window.location.href = "/login";
+      return;
+    }
+  
+    loadOrders(); // Trust the backend to check token validity
+  
     const interval = setInterval(loadOrders, 10000);
     return () => clearInterval(interval);
   }, []);
   
+
+
   const loadOrders = async () => {
     setLoading(true);
     setError(null);

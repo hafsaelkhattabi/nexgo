@@ -102,7 +102,7 @@ const Opportunities = () => {
                 {translations[language]["loginDescription"] || "Login or register to access all features including ordering from your favorite restaurants"}
               </p>
               <Link
-                to="/login"
+                to="/auth"
                 className={`inline-block bg-[#FFC72C] text-[#502314] py-2 px-6 rounded-full font-bold hover:bg-[#502314] hover:text-white transition duration-300 shadow-md`}
               >
                 {translations[language]["loginButton"] || "Login/Register"}

@@ -12,39 +12,69 @@ const Login = () => {
 
   useEffect(() => {
     // ✅ Always log out user when visiting login page
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    authService.logout();
   }, []);
 
   const redirectBasedOnRole = (role) => {
-    if (role === "restaurant") navigate("/restaurant");
-    else if (role === "delivery") navigate("/delivery");
-    else if (role === "customer") navigate("/customer");
-    else if (role === "admin") navigate("/admin");
+    const user = authService.getUserData(); // Get user data from auth service
+    const restaurantId = user?.restaurantId; // Retrieve restaurantId from the user data
+  
+    if (role === "restaurant") {
+      if (restaurantId) {
+        // Store the restaurant ID for the dashboard and navigate
+        authService.setRestaurantId(restaurantId);
+        navigate("/restaurant");
+      } else {
+        // If no restaurant is associated, redirect to restaurant creation
+        navigate("/auth");
+        toast.info("Please create your restaurant first");
+      }
+    } else if (role === "delivery") {
+      navigate("/delivery");
+    } else if (role === "customer") {
+      navigate("/customer");
+    } else if (role === "admin") {
+      navigate("/admin");
+    }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await authService.login({ 
+      const loginData = {
         email: loginField,
-        password 
-      });
-
-      const user = authService.getUserData();
-
-      if (!user) {
-        throw new Error("Failed to retrieve user data");
+        password
+      };
+  
+      const userData = await authService.login(loginData);
+      
+      // Check if we got valid user data
+      if (!userData || !userData.role) {
+        throw new Error("Login failed - incomplete user data");
       }
-
-      localStorage.setItem("token", authService.getAuthToken());
-      localStorage.setItem("user", JSON.stringify(user));
-
-      redirectBasedOnRole(user.role);
+  
+      // Handle restaurant users
+      if (userData.role === 'restaurant') {
+        if (userData.restaurantId) {
+          navigate('/restaurant');
+        } else {
+          navigate('/create-restaurant');
+          toast.info("Please complete your restaurant profile");
+        }
+      } 
+      // Handle other roles (admin, delivery, etc.)
+      else {
+        navigate(authService.getHomePath());
+      }
+      
+      toast.success("Login successful!");
+      
     } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid credentials");
+      console.error("Login error:", error);
+      toast.error(error.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -117,4 +147,3 @@ const Login = () => {
 };
 
 export default Login;
-

@@ -319,7 +319,7 @@ const CustomerPage = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">Customer Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {customerName}</p>
+            <p className="text-gray-600">Welcome back,</p>
           </div>
     
           <div className="flex items-center gap-4">
@@ -334,26 +334,28 @@ const CustomerPage = () => {
               </button>
             )}
             
-            <div className="relative">
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="bg-orange-500 text-white p-3 rounded-full shadow hover:bg-orange-600 flex items-center justify-center"
-              >
-                <ShoppingCart size={24} />
-                {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                    {cart.reduce((total, item) => total + item.quantity, 0)}
-                  </span>
-                )}
-              </button>
-              <button 
-      onClick={handleLogout}
-      className="flex items-center px-4 py-2 bg-white border border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+            <div className="flex items-center gap-3">
+  <div className="relative">
+    <button
+      onClick={() => setIsCartOpen(true)}
+      className="bg-orange-500 text-white p-3 rounded-full shadow hover:bg-orange-600 flex items-center justify-center"
     >
-      <LogOut size={18} />
-      <span>Sign Out</span>
-          </button>
-            </div>
+      <ShoppingCart size={24} />
+      {cart.length > 0 && (
+        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+          {cart.reduce((total, item) => total + item.quantity, 0)}
+        </span>
+      )}
+    </button>
+  </div>
+  <button 
+    onClick={handleLogout}
+    className="flex items-center gap-2 px-4 py-2 bg-white border border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+  >
+    <LogOut size={18} />
+    <span>Sign Out</span>
+  </button>
+</div>
           </div>
         </div>
         

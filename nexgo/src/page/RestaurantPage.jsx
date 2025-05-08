@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import authService from "../services/AuthService";
 import { ShoppingCart, Utensils, X, Menu, PlusCircle, ImagePlus, Trash } from "lucide-react";
 import { apiService, API_BASE_URL } from "../services/ApiServices";
 import OrderCard from "../component/OrderCard";
 
 const RestaurantPage = () => {
+  const navigate = useNavigate();
   const [pendingOrders, setPendingOrders] = useState([]);
   const [acceptedOrders, setAcceptedOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
@@ -23,19 +26,49 @@ const RestaurantPage = () => {
   }]);
 
   useEffect(() => {
-    const storedId = localStorage.getItem('restaurantId');
-    if (storedId) {
-      setRestaurantId(storedId);
-      return;
-    }
+    const verifyAndLoadData = async () => {
+      try {
+        // Authentication check
+        const token = authService.getAuthToken();
+        const user = authService.getUserData();
+        const restaurantId = authService.getRestaurantId();
+
+        if (!token || !user) {
+          throw new Error("Authentication required");
+        }
+
+        if (user.role === 'restaurant' && !restaurantId) {
+          navigate('/create-restaurant'); // Correct v6+ navigation
+          toast.info("Please complete your restaurant profile");
+          return;
+        }
+
+        // ... rest of your data loading logic ...
+
+      } catch (error) {
+        authService.logout();
+        navigate('/login'); // Correct v6+ navigation
+        toast.error("Please login again");
+      }
+    };
+
+    verifyAndLoadData();
+  }, [navigate]);
+
+  // useEffect(() => {
+  //   const storedId = localStorage.getItem('restaurantId');
+  //   if (storedId) {
+  //     setRestaurantId(storedId);
+  //     return;
+  //   }
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlRestaurantId = urlParams.get('restaurantId');
-    if (urlRestaurantId) {
-      setRestaurantId(urlRestaurantId);
-      localStorage.setItem('restaurantId', urlRestaurantId);
-    }
-  }, []);
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   const urlRestaurantId = urlParams.get('restaurantId');
+  //   if (urlRestaurantId) {
+  //     setRestaurantId(urlRestaurantId);
+  //     localStorage.setItem('restaurantId', urlRestaurantId);
+  //   }
+  // }, []);
 
   // useEffect(() => {
   //   const token = localStorage.getItem("token");

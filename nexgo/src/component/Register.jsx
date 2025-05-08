@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import authService from "../lib/AuthService";
-import { ArrowRight, LockKeyhole, Mail, User, Building, Users } from "lucide-react";
+import authService from "../services/AuthService";
+import { ArrowRight, LockKeyhole, Mail, User, Users } from "lucide-react";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -10,8 +10,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    name: "",
-    role: "customer"
+    name: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,22 +31,22 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const response = await authService.register({
+      // Use the specific customer registration method
+      const response = await authService.registerCustomer({
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        name: formData.name,
-        role: formData.role
+        name: formData.name
       });
       
       toast.success("Registration successful");
       
-      if (response.role === "restaurant") {
-        navigate("/restaurant");
-      } else if (response.role === "delivery") {
-        navigate("/delivery");
-      } else {
+      // If the registration also logged the user in, navigate to customer dashboard
+      if (response && response.token) {
         navigate("/customer");
+      } else {
+        // Otherwise, redirect to login page
+        navigate("/auth");
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -88,15 +87,6 @@ const Register = () => {
             <div className="relative">
               <LockKeyhole className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#502314]" />
               <input type="password" name="confirmPassword" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} className="w-full px-4 py-3 pl-10 border rounded-xl" required disabled={isLoading} />
-            </div>
-            
-            <div className="relative">
-              <Building className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#502314]" />
-              <select name="role" value={formData.role} onChange={handleChange} className="w-full px-4 py-3 pl-10 border rounded-xl text-[#502314] appearance-none" disabled={isLoading}>
-                <option value="customer">Customer</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="delivery">Delivery</option>
-              </select>
             </div>
             
             <button type="submit" disabled={isLoading} className="w-full text-[#502314] bg-primary py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-300 hover:bg-[#FFC72C]">

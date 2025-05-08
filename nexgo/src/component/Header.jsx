@@ -9,18 +9,13 @@ function Header() {
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state (responsive)
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
-  const servicesRef = useRef(null);
   const aboutRef = useRef(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (servicesRef.current && !servicesRef.current.contains(event.target)) {
-        setIsServicesOpen(false);
-      }
       if (aboutRef.current && !aboutRef.current.contains(event.target)) {
         setIsAboutOpen(false);
       }
@@ -61,44 +56,6 @@ function Header() {
             {translations[language]["home"]}
           </Link>
 
-          {/* Services Dropdown */}
-          <div className="relative" ref={servicesRef}>
-            <button
-              onClick={() => setIsServicesOpen(!isServicesOpen)}
-              className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
-            >
-              {translations[language]["services"]}
-            </button>
-            {isServicesOpen && (
-              <div
-                className={`absolute mt-2 w-48 rounded-lg shadow-lg ${
-                  darkMode ? "bg-gray-800 text-white" : "bg-white text-[#502314]"
-                }`}
-              >
-                <Link
-                  to="/NexGo-Food"
-                  className={`block px-4 py-2 ${
-                    darkMode
-                      ? "hover:bg-gray-700"
-                      : "hover:bg-[#FFC72C] hover:text-[#502314]"
-                  }`}
-                >
-                  NexGo Food
-                </Link>
-                <Link
-                  to="/Order-for-someone-else"
-                  className={`block px-4 py-2 ${
-                    darkMode
-                      ? "hover:bg-gray-700"
-                      : "hover:bg-[#FFC72C] hover:text-[#502314]"
-                  }`}
-                >
-                  Order for someone else
-                </Link>
-              </div>
-            )}
-          </div>
-
           {/* Restaurants Link */}
           <Link
             to="/restaurants"
@@ -109,13 +66,13 @@ function Header() {
 
           {/* About Us Dropdown */}
           <div className="relative" ref={aboutRef}>
-  <button
-    onClick={() => window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" })}
-    className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
-  >
-    {translations[language]["about"]}
-  </button>
-</div>
+            <button
+              onClick={() => window.scrollTo({ top: document.getElementById("footer").offsetTop, behavior: "smooth" })}
+              className="uppercase font-bold transition-colors duration-300 hover:text-[#FFC72C] relative after:content-[''] after:block after:h-1 after:w-full after:bg-[#FFC72C] after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
+            >
+              {translations[language]["about"]}
+            </button>
+          </div>
         </div>
 
         {/* Dark Mode & Language Toggle + Login Button */}
@@ -161,32 +118,6 @@ function Header() {
           >
             {translations[language]["home"]}
           </Link>
-
-          {/* Services Dropdown in Mobile Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setIsServicesOpen(!isServicesOpen)}
-              className="w-full text-left py-2 font-bold hover:text-[#FFC72C]"
-            >
-              {translations[language]["services"]}
-            </button>
-            {isServicesOpen && (
-              <div className="pl-4">
-                <Link
-                  to="/NexGo-Food"
-                  className="block py-2 hover:text-[#FFC72C]"
-                >
-                  NexGo Food
-                </Link>
-                <Link
-                  to="/Order-for-someone-else"
-                  className="block py-2 hover:text-[#FFC72C]"
-                >
-                  Order for someone else
-                </Link>
-              </div>
-            )}
-          </div>
 
           {/* Restaurants Link in Mobile Menu */}
           <Link

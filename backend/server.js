@@ -16,6 +16,8 @@ const dashboardRoutes = require('./routes/dashboard');
 const authRoutes = require('./routes/auth');
 const restaurantFormRoutes = require("./routes/RestaurantFormRoutes");
 const restaurantPublicRoutes = require("./routes/restaurantPublicRoutes");
+const deliveryFormRoute = require("./routes/deliveryFormRoute");
+const customer = require("./routes/customerRoutesauth");
 
 const app = express();
 app.use(express.json());
@@ -40,14 +42,15 @@ app.use("/apply", deliveryRoutes); // Delivery application routes
 // app.use("/api/restaurant", restaurantRoutesauth);
 app.use("/login", authRoutes);
 // app.use("/restaurant/dash", restaurantroutesdash);
-app.use("/deliveries", deliveryRoutes);
+// app.use("/deliveries", deliveryRoutes);
 app.use("/menu", menu);
 app.use("/orders", order);
 app.use("/notification", notificationRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use("/restaurants", restaurantFormRoutes);
-
+app.use("/delivery", deliveryFormRoute);
+app.use('/customer', customer);
 
 // Start Server
 app.listen(PORT, () => {

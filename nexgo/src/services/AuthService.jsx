@@ -75,6 +75,7 @@
 // export default authService;
 
 import axios from 'axios';
+import { API_BASE_URL } from './ApiServices';
 
 class AuthService {
   constructor() {
@@ -82,62 +83,95 @@ class AuthService {
       email: "admin@example.com",
       password: "admin123",
     };
-
+    
     this.api = axios.create({
       baseURL: 'http://localhost:5000',
     });
-
+    
     this.tokenKey = "auth_token";
     this.userKey = "user_data";
   }
+
+
+  async registerCustomer(customerData) {
+    const data = {
+      ...customerData,
+      role: 'customer'
+    };
+    return this.register(data);
+  }
+
 
   // ========================
   // Authentication Methods
   // ========================
   async login(credentials) {
     console.log("Login attempt with:", credentials);
-
-    // Check for hardcoded admin login
-    const isHardcodedAdmin =
-      (credentials.email === this.adminCredentials.email &&
-        credentials.password === this.adminCredentials.password) ||
-      (credentials.email === "admin" &&
-        credentials.password === this.adminCredentials.password);
-
-    if (isHardcodedAdmin) {
-      console.log("Logging in as hardcoded admin...");
+  
+    // Admin login
+    if (
+      credentials.email === this.adminCredentials.email &&
+      credentials.password === this.adminCredentials.password
+    ) {
       const adminUser = {
         id: "admin-id",
         name: "Administrator",
         email: this.adminCredentials.email,
-        role: "admin"
+        role: "admin",
       };
-
+  
       localStorage.setItem(this.tokenKey, "admin-token-hardcoded");
       localStorage.setItem(this.userKey, JSON.stringify(adminUser));
       return adminUser;
     }
-
-    // Regular user login
+  
+    // Determine user type by email pattern or context
+    let loginEndpoint = "/restaurants/login";
+    let role = "restaurant";
+  
+    if (credentials.email.includes("delivery")) {
+      loginEndpoint = "/delivery/login";
+      role = "delivery";
+    }
+  
     try {
-      console.log("Falling back to backend login...");
-      console.log("Login attempt with:", credentials);
-      const response = await this.api.post('/restaurants/login', {
+      const response = await this.api.post(loginEndpoint, {
         email: credentials.email,
-        password: credentials.password
+        password: credentials.password,
       });
-
-      if (response.data.token) {
-        localStorage.setItem(this.tokenKey, response.data.token);
-        localStorage.setItem(this.userKey, JSON.stringify(response.data));
+  
+      console.log("Login response from backend:", response.data);
+  
+      if (!response.data.token) {
+        throw new Error("No token received");
       }
-
-      return this.getUserData();
+  
+      // Store token
+      localStorage.setItem(this.tokenKey, response.data.token);
+  
+      // Prepare user data
+      const userData = {
+        role,
+        _id: response.data.userId || 'temp-id',
+        email: credentials.email,
+        token: response.data.token,
+        ...(role === 'restaurant' && { restaurantId: response.data.restaurantId })
+      };
+  
+      localStorage.setItem(this.userKey, JSON.stringify(userData));
+  
+      // Store restaurantId separately if it's a restaurant
+      if (role === 'restaurant' && response.data.restaurantId) {
+        localStorage.setItem('restaurantId', response.data.restaurantId);
+      }
+  
+      return userData;
     } catch (error) {
       console.error("Login error:", error);
       throw error;
     }
   }
+  
 
   // ========================
   // Registration Methods
@@ -174,6 +208,7 @@ class AuthService {
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
+    localStorage.removeItem('restaurantId');
   }
 
   isAuthenticated() {
@@ -207,6 +242,46 @@ class AuthService {
 
   isDelivery() {
     return this.getUserRole() === 'delivery';
+  }
+
+  // ========================
+  // Data Retrieval
+  // ========================
+  async getRestaurantData(userId) {
+    try {
+      const token = this.getAuthToken();
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      // Fetch restaurant data based on user ID
+      const response = await axios.get(`${API_BASE_URL}/api/restaurants/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.data && response.data._id) {
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching restaurant data:', error);
+      return null;
+    }
+  }
+  
+  // Method to get the restaurant ID from local storage
+  getRestaurantId() {
+    return localStorage.getItem('restaurantId');
+  }
+  
+  // Method to set restaurant ID in local storage
+  setRestaurantId(id) {
+    localStorage.setItem('restaurantId', id);
+  }
+  
+  // Method to clear restaurant ID from local storage
+  clearRestaurantId() {
+    localStorage.removeItem('restaurantId');
   }
 
   // ========================

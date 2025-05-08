@@ -115,4 +115,10 @@ export const apiService = {
     });
     return response.data;
   },
+
+  getRestaurantByUserId: async (userId) => {
+    const response = await api.get(`/restaurants/user/${userId}`);
+    return response.data;
+  },
+  
 };
